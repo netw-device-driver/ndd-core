@@ -474,7 +474,7 @@ spec:
         - --leader-elect
         - -- debug
         command:
-        - /manager ndd
+        - ./manager ndd
         image: henderiw/nddcore:latest
         imagePullPolicy: Always
         livenessProbe:
