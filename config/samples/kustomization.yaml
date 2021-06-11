@@ -1,0 +1,8 @@
+## Append samples you want in your CSV to this file as resources ##
+resources:
+- driver_v1_networknode.yaml
+- driver_v1_devicedriver.yaml
+- pkg_v1_devicedriver.yaml
+- pkg_v1_provider.yaml
+- pkg_v1_package.yaml
+#+kubebuilder:scaffold:manifestskustomizesamples

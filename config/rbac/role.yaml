@@ -1,0 +1,86 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - devicedrivers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - devicedrivers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - devicedrivers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - networknodes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - networknodes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - driver.ndd.henderiw.be
+  resources:
+  - networknodes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providers/status
+  verbs:
+  - get
+  - patch
+  - update
