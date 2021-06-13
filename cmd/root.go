@@ -24,8 +24,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	driverv1 "github.com/netw-device-driver/ndd-core/apis/driver/v1"
 	pkgv1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
@@ -39,16 +37,9 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "ndd",
+	Use:   "manager",
 	Short: "Network device driver",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		zl := zap.New(zap.UseDevMode(debug))
-		if debug {
-			// The controller-runtime runs with a no-op logger by default. It is
-			// *very* verbose even at info level, so we only provide it a real
-			// logger when we're running in debug mode.
-			ctrl.SetLogger(zl)
-		}
 	},
 }
 

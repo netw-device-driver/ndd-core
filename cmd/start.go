@@ -17,19 +17,19 @@ limitations under the License.
 package cmd
 
 import (
-	"context"
-	"os"
-
 	"github.com/pkg/errors"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	drivercontrollers "github.com/netw-device-driver/ndd-core/controllers/driver"
-	pkgcontrollers "github.com/netw-device-driver/ndd-core/controllers/pkg"
+	"github.com/netw-device-driver/ndd-core/internal/controllers/pkg"
+	"github.com/netw-device-driver/ndd-core/internal/nddpkg"
+	"github.com/netw-device-driver/ndd-runtime/pkg/logging"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -50,21 +50,34 @@ var startCmd = &cobra.Command{
 	Aliases:      []string{"start"},
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-
+		zlog := zap.New(zap.UseDevMode(debug), zap.JSONEncoder())
+		if debug {
+			// Only use a logr.Logger when debug is on
+			ctrl.SetLogger(zlog)
+		}
+		zlog.Info("create manager")
 		mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 			Scheme:                 scheme,
 			MetricsBindAddress:     metricsAddr,
 			Port:                   9443,
 			HealthProbeBindAddress: probeAddr,
-			LeaderElection:         enableLeaderElection,
-			LeaderElectionID:       "c66ce353.ndd.henderiw.be",
+			LeaderElection:         false,
+			//LeaderElection:         enableLeaderElection,
+			LeaderElectionID: "c66ce353.ndd.henderiw.be",
 		})
 		if err != nil {
 			return errors.Wrap(err, "Cannot create manager")
 		}
 
-		ctx := ctrl.SetupSignalHandler()
-		setupReconcilers(ctx, mgr)
+		//log.Info("setup reconcilers/controllers")
+		//ctx := ctrl.SetupSignalHandler()
+		//setupReconcilers(ctx, mgr)
+
+		pkgCache := nddpkg.NewImageCache(cacheDir, afero.NewOsFs())
+
+		if err := pkg.Setup(mgr, logging.NewLogrLogger(zlog.WithName("nddcore-pkg")), pkgCache, namespace); err != nil {
+			return errors.Wrap(err, "Cannot add packages controllers to manager")
+		}
 
 		// +kubebuilder:scaffold:builder
 
@@ -75,8 +88,8 @@ var startCmd = &cobra.Command{
 			return errors.Wrap(err, "unable to set up ready check")
 		}
 
-		//setupLog.Info("starting manager")
-		if err := mgr.Start(ctx); err != nil {
+		zlog.Info("starting manager")
+		if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 			return errors.Wrap(err, "problem running manager")
 		}
 		return nil
@@ -89,12 +102,13 @@ func init() {
 	startCmd.Flags().StringVarP(&probeAddr, "health-probe-bind-address", "p", ":8081", "The address the probe endpoint binds to.")
 	startCmd.Flags().BoolVarP(&enableLeaderElection, "leader-elect", "l", false, "Enable leader election for controller manager. "+
 		"Enabling this will ensure there is only one active controller manager.")
-	startCmd.Flags().IntVarP(&concurrency, "concurrency", "c", 1, "Number of items to process simultaneously")
+	startCmd.Flags().IntVarP(&concurrency, "concurrency", "", 1, "Number of items to process simultaneously")
 	startCmd.Flags().StringVarP(&namespace, "namespace", "n", viper.GetString("POD_NAMESPACE"), "Namespace used to unpack and run packages.")
-	startCmd.Flags().StringVarP(&cacheDir, "cache-dir", "d", viper.GetString("CACHE_DIR"), "Directory used for caching package images.")
+	startCmd.Flags().StringVarP(&cacheDir, "cache-dir", "c", viper.GetString("CACHE_DIR"), "Directory used for caching package images.")
 
 }
 
+/*
 func setupReconcilers(ctx context.Context, mgr ctrl.Manager) {
 	if err := (&drivercontrollers.NetworkNodeReconciler{
 		Client: mgr.GetClient(),
@@ -116,6 +130,7 @@ func setupReconcilers(ctx context.Context, mgr ctrl.Manager) {
 		os.Exit(1)
 	}
 }
+*/
 
 func nddConcurrency(c int) controller.Options {
 	return controller.Options{MaxConcurrentReconciles: c}

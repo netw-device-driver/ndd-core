@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	nddv1 "github.com/netw-device-driver/ndd-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -28,7 +29,8 @@ type ProviderSpec struct {
 
 // ProviderStatus defines the observed state of Provider
 type ProviderStatus struct {
-	PackageStatus `json:",inline"`
+	nddv1.ConditionedStatus `json:",inline"`
+	PackageStatus           `json:",inline"`
 }
 
 //+kubebuilder:object:root=true

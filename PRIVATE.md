@@ -4,9 +4,11 @@ mkdir $operator
 cd $operator
 go mod init $github_org/$operator
 
-## initialize opera
+## initialize operator
 
 operator-sdk init --domain ndd.henderiw.be --license apache2 --owner "Wim Henderickx" --repo=github.com/$github_org/$operator
+
+kubebuilder init --plugins go/v3 --domain henderiw.be --license apache2 --owner "Wim henderickx"
 
 ## Create a frigates API with Group: testgroup, Version: v1alpha1 and Kind: Test1
 
@@ -20,7 +22,7 @@ operator-sdk create api --group driver --version v1 --kind DeviceDriver
 operator-sdk create api --group pkg --version v1 --kind Provider
 operator-sdk create api --group pkg --version v1 --kind Package
 
-
+kubebuilder create api --group pk2 --version v1 --kind Provider
 
 export operator=ndd-runtime
 export github_org=netw-device-driver
