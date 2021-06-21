@@ -26,3 +26,5 @@ testbin/*
 
 #ignore
 PRIVATE.md
+bin/*
+ndd-core
