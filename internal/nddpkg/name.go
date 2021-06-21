@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 Wim Henderickx.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,20 +26,20 @@ import (
 )
 
 const (
-	// MetaFile is the name of a Crossplane package metadata file.
-	MetaFile string = "crossplane.yaml"
+	// MetaFile is the name of a Ndd package metadata file.
+	MetaFile string = "ndd.yaml"
 
-	// StreamFile is the name of the file in a Crossplane package image that
+	// StreamFile is the name of the file in a ndd package image that
 	// contains its YAML stream.
 	StreamFile string = "package.yaml"
 
 	// StreamFileMode determines the permissions on the stream file.
 	StreamFileMode os.FileMode = 0o644
 
-	// XpkgExtension is the extension for compiled Crossplane packages.
+	// XpkgExtension is the extension for compiled ndd packages.
 	XpkgExtension string = ".xpkg"
 
-	// XpkgMatchPattern is the match pattern for identifying compiled Crossplane packages.
+	// XpkgMatchPattern is the match pattern for identifying compiled ndd packages.
 	XpkgMatchPattern string = "*" + XpkgExtension
 )
 
@@ -75,7 +75,7 @@ func ToDNSLabel(s string) string { // nolint:gocyclo
 	return strings.Trim(cut.String(), "-")
 }
 
-// BuildPath builds a path for a compiled Crossplane package. If file name has
+// BuildPath builds a path for a compiled Ndd package. If file name has
 // extension it will be replaced.
 func BuildPath(path, name string) string {
 	full := filepath.Join(path, name)

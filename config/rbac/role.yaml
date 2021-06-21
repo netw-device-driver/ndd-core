@@ -7,6 +7,25 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - serviceaccounts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - driver.ndd.henderiw.be
   resources:
   - devicedrivers
@@ -54,6 +73,44 @@ rules:
   - driver.ndd.henderiw.be
   resources:
   - networknodes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - locks
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providerrevisions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providerrevisions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - pkg.ndd.henderiw.be
+  resources:
+  - providerrevisions/status
   verbs:
   - get
   - patch

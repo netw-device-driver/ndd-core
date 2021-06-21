@@ -10,17 +10,27 @@ metadata:
 spec:
   group: pkg.ndd.henderiw.be
   names:
+    categories:
+    - ndd
+    - pkg
     kind: Provider
     listKind: ProviderList
     plural: providers
     singular: provider
-  scope: Namespaced
+  scope: Cluster
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .spec.package
+      name: PACKAGE
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1
     schema:
       openAPIV3Schema:
-        description: Provider is a crd for adding a provider to the Network Device
-          Driver.
+        description: Provider is the CRD type for a request to add a provider to Network
+          Device Driver.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -38,6 +48,16 @@ spec:
             description: ProviderSpec specifies details about a request to install
               a provider to the network device driver.
             properties:
+              controllerConfigRef:
+                description: ControllerConfigRef references a ControllerConfig resource
+                  that will be used to configure the packaged controller Deployment.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
               package:
                 description: Package is the name of the package that is being requested.
                 type: string
@@ -59,6 +79,19 @@ spec:
                       type: string
                   type: object
                 type: array
+              revisionActivationPolicy:
+                default: Automatic
+                description: RevisionActivationPolicy specifies how the package controller
+                  should update from one revision to the next. Options are Automatic
+                  or Manual. Default is Automatic.
+                type: string
+              revisionHistoryLimit:
+                default: 1
+                description: RevisionHistoryLimit dictates how the package controller
+                  cleans up old inactive package revisions. Defaults to 1. Can be
+                  disabled by explicitly setting to 0.
+                format: int64
+                type: integer
             required:
             - package
             type: object

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 Wim Henderickx.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,35 +23,24 @@ import (
 	extv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/crossplane/crossplane-runtime/pkg/parser"
-	v1 "github.com/crossplane/crossplane/apis/apiextensions/v1"
-	v1beta1 "github.com/crossplane/crossplane/apis/apiextensions/v1beta1"
-	pkgmetav1 "github.com/crossplane/crossplane/apis/pkg/meta/v1"
+	pkgmetav1 "github.com/netw-device-driver/ndd-core/apis/pkg/meta/v1"
 	"github.com/netw-device-driver/ndd-core/internal/version"
+	"github.com/netw-device-driver/ndd-runtime/pkg/parser"
 )
 
 const (
-	errNotExactlyOneMeta         = "not exactly one package meta type"
-	errNotMeta                   = "meta type is not a package"
-	errNotMetaProvider           = "package meta type is not Provider"
-	errNotMetaConfiguration      = "package meta type is not Configuration"
-	errNotCRD                    = "object is not a CRD"
-	errNotXRD                    = "object is not an XRD"
-	errNotComposition            = "object is not a Composition"
-	errBadConstraints            = "package version constraints are poorly formatted"
-	errCrossplaneIncompatibleFmt = "package is not compatible with Crossplane version (%s)"
+	errNotExactlyOneMeta  = "not exactly one package meta type"
+	errNotMeta            = "meta type is not a package"
+	errNotMetaProvider    = "package meta type is not Provider"
+	errNotCRD             = "object is not a CRD"
+	errBadConstraints     = "package version constraints are poorly formatted"
+	errNddIncompatibleFmt = "package is not compatible with Ndd version (%s)"
 )
 
 // NewProviderLinter is a convenience function for creating a package linter for
 // providers.
 func NewProviderLinter() parser.Linter {
 	return parser.NewPackageLinter(parser.PackageLinterFns(OneMeta), parser.ObjectLinterFns(IsProvider, PackageValidSemver), parser.ObjectLinterFns(IsCRD))
-}
-
-// NewConfigurationLinter is a convenience function for creating a package linter for
-// configurations.
-func NewConfigurationLinter() parser.Linter {
-	return parser.NewPackageLinter(parser.PackageLinterFns(OneMeta), parser.ObjectLinterFns(IsConfiguration, PackageValidSemver), parser.ObjectLinterFns(parser.Or(IsXRD, IsComposition)))
 }
 
 // OneMeta checks that there is only one meta object in the package.
@@ -71,33 +60,24 @@ func IsProvider(o runtime.Object) error {
 	return nil
 }
 
-// IsConfiguration checks that an object is a Configuration meta type.
-func IsConfiguration(o runtime.Object) error {
-	po, _ := TryConvert(o, &pkgmetav1.Configuration{})
-	if _, ok := po.(*pkgmetav1.Configuration); !ok {
-		return errors.New(errNotMetaConfiguration)
-	}
-	return nil
-}
-
-// PackageCrossplaneCompatible checks that the current Crossplane version is
+// PackageNddCompatible checks that the current Ndd version is
 // compatible with the package constraints.
-func PackageCrossplaneCompatible(v version.Operations) parser.ObjectLinterFn {
+func PackageNddCompatible(v version.Operations) parser.ObjectLinterFn {
 	return func(o runtime.Object) error {
-		p, ok := TryConvertToPkg(o, &pkgmetav1.Provider{}, &pkgmetav1.Configuration{})
+		p, ok := TryConvertToPkg(o, &pkgmetav1.Provider{})
 		if !ok {
 			return errors.New(errNotMeta)
 		}
 
-		if p.GetCrossplaneConstraints() == nil {
+		if p.GetNddConstraints() == nil {
 			return nil
 		}
-		in, err := v.InConstraints(p.GetCrossplaneConstraints().Version)
+		in, err := v.InConstraints(p.GetNddConstraints().Version)
 		if err != nil {
-			return errors.Wrapf(err, errCrossplaneIncompatibleFmt, v.GetVersionString())
+			return errors.Wrapf(err, errNddIncompatibleFmt, v.GetVersionString())
 		}
 		if !in {
-			return errors.Errorf(errCrossplaneIncompatibleFmt, v.GetVersionString())
+			return errors.Errorf(errNddIncompatibleFmt, v.GetVersionString())
 		}
 		return nil
 	}
@@ -105,15 +85,15 @@ func PackageCrossplaneCompatible(v version.Operations) parser.ObjectLinterFn {
 
 // PackageValidSemver checks that the package uses valid semver ranges.
 func PackageValidSemver(o runtime.Object) error {
-	p, ok := TryConvertToPkg(o, &pkgmetav1.Provider{}, &pkgmetav1.Configuration{})
+	p, ok := TryConvertToPkg(o, &pkgmetav1.Provider{})
 	if !ok {
 		return errors.New(errNotMeta)
 	}
 
-	if p.GetCrossplaneConstraints() == nil {
+	if p.GetNddConstraints() == nil {
 		return nil
 	}
-	if _, err := semver.NewConstraint(p.GetCrossplaneConstraints().Version); err != nil {
+	if _, err := semver.NewConstraint(p.GetNddConstraints().Version); err != nil {
 		return errors.Wrap(err, errBadConstraints)
 	}
 	return nil
@@ -126,29 +106,5 @@ func IsCRD(o runtime.Object) error {
 		return nil
 	default:
 		return errors.New(errNotCRD)
-	}
-}
-
-// IsXRD checks that an object is a CompositeResourceDefinition.
-func IsXRD(o runtime.Object) error {
-	switch o.(type) {
-	case *v1beta1.CompositeResourceDefinition:
-		return nil
-	case *v1.CompositeResourceDefinition:
-		return nil
-	default:
-		return errors.New(errNotXRD)
-	}
-}
-
-// IsComposition checks that an object is a Composition.
-func IsComposition(o runtime.Object) error {
-	switch o.(type) {
-	case *v1beta1.Composition:
-		return nil
-	case *v1.Composition:
-		return nil
-	default:
-		return errors.New(errNotComposition)
 	}
 }

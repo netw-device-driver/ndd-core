@@ -20,6 +20,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"github.com/netw-device-driver/ndd-core/internal/controllers/pkg/manager"
+	"github.com/netw-device-driver/ndd-core/internal/controllers/pkg/revision"
 	"github.com/netw-device-driver/ndd-core/internal/nddpkg"
 	"github.com/netw-device-driver/ndd-runtime/pkg/logging"
 )
@@ -34,14 +35,14 @@ func Setup(mgr ctrl.Manager, l logging.Logger, c nddpkg.Cache, namespace string)
 			return err
 		}
 	}
-	/*
-		for _, setup := range []func(ctrl.Manager, logging.Logger, nddpkg.Cache, string) error{
-			revision.SetupProviderRevision,
-		} {
-			if err := setup(mgr, l, c, namespace); err != nil {
-				return err
-			}
+
+	for _, setup := range []func(ctrl.Manager, logging.Logger, nddpkg.Cache, string) error{
+		revision.SetupProviderRevision,
+	} {
+		if err := setup(mgr, l, c, namespace); err != nil {
+			return err
 		}
-	*/
+	}
+
 	return nil
 }

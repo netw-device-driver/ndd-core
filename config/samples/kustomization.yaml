@@ -5,4 +5,8 @@ resources:
 - pkg_v1_devicedriver.yaml
 - pkg_v1_provider.yaml
 - pkg_v1_package.yaml
+- pkg_v1_revision.yaml
+- meta.pkg_v1_provider.yaml
+- pkg_v1_controllerconfig.yaml
+- pkg_v1_lock.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

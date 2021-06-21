@@ -8,6 +8,10 @@ metadata:
 spec:
   template:
     spec:
+      volumes:
+      - emptyDir:
+          sizeLimit: 5Mi
+        name: package-cache
       containers:
       - name: kube-rbac-proxy
         image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
@@ -27,4 +31,8 @@ spec:
         - "--health-probe-bind-address=:8081"
         - "--metrics-bind-address=127.0.0.1:8080"
         - "--leader-elect"
+        - "--cache-dir=/cache"
         - "--debug"
+        volumeMounts:
+        - mountPath: /cache
+          name: package-cache

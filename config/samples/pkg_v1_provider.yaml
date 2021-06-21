@@ -1,7 +1,6 @@
 apiVersion: pkg.ndd.henderiw.be/v1
 kind: Provider
 metadata:
-  name: provider-sample
+  name: test-provider
 spec:
-  # Add fields here
-  foo: bar
+  package: crossplane/provider-aws:alpha

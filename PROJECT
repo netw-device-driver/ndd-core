@@ -52,4 +52,44 @@ resources:
   kind: Package
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ndd.henderiw.be
+  group: pgk2
+  kind: Provider
+  path: github.com/netw-device-driver/ndd-core/apis/pgk2/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ndd.henderiw.be
+  group: pkg
+  kind: Revision
+  path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ndd.henderiw.be
+  group: meta.pkg
+  kind: Provider
+  path: github.com/netw-device-driver/ndd-core/apis/meta.pkg/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ndd.henderiw.be
+  group: pkg
+  kind: ControllerConfig
+  path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: ndd.henderiw.be
+  group: pkg
+  kind: Lock
+  path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
+  version: v1
 version: "3"

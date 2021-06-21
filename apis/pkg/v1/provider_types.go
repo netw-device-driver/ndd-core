@@ -25,6 +25,11 @@ import (
 // the network device driver.
 type ProviderSpec struct {
 	PackageSpec `json:",inline"`
+
+	// ControllerConfigRef references a ControllerConfig resource that will be
+	// used to configure the packaged controller Deployment.
+	// +optional
+	ControllerConfigReference *nddv1.Reference `json:"controllerConfigRef,omitempty"`
 }
 
 // ProviderStatus defines the observed state of Provider
@@ -33,10 +38,16 @@ type ProviderStatus struct {
 	PackageStatus           `json:",inline"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:object:root=true
+// +genclient
+// +genclient:nonNamespaced
 
-// Provider is a crd for adding a provider to the Network Device Driver.
+// Provider is the CRD type for a request to add a provider to Network Device Driver.
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="PACKAGE",type="string",JSONPath=".spec.package"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster,categories={ndd,pkg}
 type Provider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

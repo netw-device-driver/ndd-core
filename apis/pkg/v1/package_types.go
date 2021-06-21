@@ -25,6 +25,20 @@ type PackageSpec struct {
 	// Package is the name of the package that is being requested.
 	Package string `json:"package"`
 
+	// RevisionActivationPolicy specifies how the package controller should
+	// update from one revision to the next. Options are Automatic or Manual.
+	// Default is Automatic.
+	// +optional
+	// +kubebuilder:default=Automatic
+	RevisionActivationPolicy *RevisionActivationPolicy `json:"revisionActivationPolicy,omitempty"`
+
+	// RevisionHistoryLimit dictates how the package controller cleans up old
+	// inactive package revisions.
+	// Defaults to 1. Can be disabled by explicitly setting to 0.
+	// +optional
+	// +kubebuilder:default=1
+	RevisionHistoryLimit *int64 `json:"revisionHistoryLimit,omitempty"`
+
 	// PackagePullSecrets are named secrets in the same namespace that can be used
 	// to fetch packages from private registries.
 	// +optional

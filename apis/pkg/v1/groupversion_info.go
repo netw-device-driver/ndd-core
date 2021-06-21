@@ -50,3 +50,11 @@ var (
 	ProviderKindAPIVersion   = ProviderKind + "." + GroupVersion.String()
 	ProviderGroupVersionKind = GroupVersion.WithKind(ProviderKind)
 )
+
+// ProviderRevision type metadata.
+var (
+	ProviderRevisionKind             = reflect.TypeOf(ProviderRevision{}).Name()
+	ProviderRevisionGroupKind        = schema.GroupKind{Group: Group, Kind: ProviderRevisionKind}.String()
+	ProviderRevisionKindAPIVersion   = ProviderRevisionKind + "." + GroupVersion.String()
+	ProviderRevisionGroupVersionKind = GroupVersion.WithKind(ProviderRevisionKind)
+)

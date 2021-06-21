@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 Wim Henderickx.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
 	"github.com/pkg/errors"
 
-	"github.com/crossplane/crossplane-runtime/pkg/parser"
+	"github.com/netw-device-driver/ndd-runtime/pkg/parser"
 )
 
 const (
@@ -78,7 +78,7 @@ func (t *teeReader) Annotate() interface{} {
 	return anno.Annotate()
 }
 
-// Build compiles a Crossplane package from an on-disk package.
+// Build compiles a Ndd package from an on-disk package.
 func Build(ctx context.Context, b parser.Backend, p parser.Parser, l parser.Linter) (v1.Image, error) {
 	// Get YAML stream.
 	r, err := b.Init(ctx)

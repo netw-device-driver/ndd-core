@@ -57,9 +57,9 @@ var startCmd = &cobra.Command{
 		}
 		zlog.Info("create manager")
 		mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-			Scheme:                 scheme,
-			MetricsBindAddress:     metricsAddr,
-			Port:                   9443,
+			Scheme: scheme,
+			//MetricsBindAddress:     metricsAddr,
+			//Port:                   9443,
 			HealthProbeBindAddress: probeAddr,
 			LeaderElection:         false,
 			//LeaderElection:         enableLeaderElection,
@@ -74,6 +74,7 @@ var startCmd = &cobra.Command{
 		//setupReconcilers(ctx, mgr)
 
 		pkgCache := nddpkg.NewImageCache(cacheDir, afero.NewOsFs())
+		zlog.Info("Cache Directory", "cacheDir", cacheDir)
 
 		if err := pkg.Setup(mgr, logging.NewLogrLogger(zlog.WithName("nddcore-pkg")), pkgCache, namespace); err != nil {
 			return errors.Wrap(err, "Cannot add packages controllers to manager")
@@ -104,7 +105,7 @@ func init() {
 		"Enabling this will ensure there is only one active controller manager.")
 	startCmd.Flags().IntVarP(&concurrency, "concurrency", "", 1, "Number of items to process simultaneously")
 	startCmd.Flags().StringVarP(&namespace, "namespace", "n", viper.GetString("POD_NAMESPACE"), "Namespace used to unpack and run packages.")
-	startCmd.Flags().StringVarP(&cacheDir, "cache-dir", "c", viper.GetString("CACHE_DIR"), "Directory used for caching package images.")
+	startCmd.Flags().StringVarP(&cacheDir, "cache-dir", "c", "/cache", "Directory used for caching package images.")
 
 }
 

@@ -18,15 +18,21 @@ package manager
 
 import (
 	"context"
+	"math"
 	"strings"
 	"time"
 
+	"github.com/netw-device-driver/ndd-runtime/pkg/meta"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
+	"github.com/netw-device-driver/ndd-core/internal/nddpkg"
 	"github.com/netw-device-driver/ndd-runtime/pkg/event"
 	"github.com/netw-device-driver/ndd-runtime/pkg/logging"
 	"github.com/netw-device-driver/ndd-runtime/pkg/resource"
@@ -63,16 +69,25 @@ const (
 	errUnknownPackageRevisionHealth = "current package revision health is unknown"
 )
 
+// Event reasons.
+const (
+	reasonList               event.Reason = "ListRevision"
+	reasonUnpack             event.Reason = "UnpackPackage"
+	reasonTransitionRevision event.Reason = "TransitionRevision"
+	reasonGarbageCollect     event.Reason = "GarbageCollect"
+	reasonInstall            event.Reason = "InstallPackageRevision"
+)
+
 // Reconciler reconciles packages.
 type Reconciler struct {
 	client resource.ClientApplicator
-	//pkg    Revisioner
+	pkg    Revisioner
 	log    logging.Logger
 	record event.Recorder
 
-	newPackage func() v1.Package
-	//newPackageRevision     func() v1.PackageRevision
-	//newPackageRevisionList func() v1.PackageRevisionList
+	newPackage             func() v1.Package
+	newPackageRevision     func() v1.PackageRevision
+	newPackageRevisionList func() v1.PackageRevisionList
 }
 
 // ReconcilerOption is used to configure the Reconciler.
@@ -82,6 +97,28 @@ type ReconcilerOption func(*Reconciler)
 func WithNewPackageFn(f func() v1.Package) ReconcilerOption {
 	return func(r *Reconciler) {
 		r.newPackage = f
+	}
+}
+
+// WithNewPackageRevisionFn determines the type of package being reconciled.
+func WithNewPackageRevisionFn(f func() v1.PackageRevision) ReconcilerOption {
+	return func(r *Reconciler) {
+		r.newPackageRevision = f
+	}
+}
+
+// WithNewPackageRevisionListFn determines the type of package being reconciled.
+func WithNewPackageRevisionListFn(f func() v1.PackageRevisionList) ReconcilerOption {
+	return func(r *Reconciler) {
+		r.newPackageRevisionList = f
+	}
+}
+
+// WithRevisioner specifies how the Reconciler should acquire a package image's
+// revision name.
+func WithRevisioner(d Revisioner) ReconcilerOption {
+	return func(r *Reconciler) {
+		r.pkg = d
 	}
 }
 
@@ -102,20 +139,20 @@ func WithRecorder(er event.Recorder) ReconcilerOption {
 // SetupProvider adds a controller that reconciles Providers.
 func SetupProvider(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 	name := "packages/" + strings.ToLower(v1.ProviderGroupKind)
-	p := func() v1.Package { return &v1.Provider{} }
-	//r := func() v1.PackageRevision { return &v1.ProviderRevision{} }
-	//rl := func() v1.PackageRevisionList { return &v1.ProviderRevisionList{} }
+	np := func() v1.Package { return &v1.Provider{} }
+	nr := func() v1.PackageRevision { return &v1.ProviderRevision{} }
+	nrl := func() v1.PackageRevisionList { return &v1.ProviderRevisionList{} }
 
-	//clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
-	//if err != nil {
-	//	return errors.Wrap(err, "failed to initialize clientset")
-	//}
+	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		return errors.Wrap(err, "failed to initialize clientset")
+	}
 
 	r := NewReconciler(mgr,
-		WithNewPackageFn(p),
-		//WithNewPackageRevisionFn(r),
-		//WithNewPackageRevisionListFn(rl),
-		//WithRevisioner(NewPackageRevisioner(nddpkg.NewK8sFetcher(clientset, namespace))),
+		WithNewPackageFn(np),
+		WithNewPackageRevisionFn(nr),
+		WithNewPackageRevisionListFn(nrl),
+		WithRevisioner(NewPackageRevisioner(nddpkg.NewK8sFetcher(clientset, namespace))),
 		WithLogger(l.WithValues("controller", name)),
 		WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 	)
@@ -123,7 +160,7 @@ func SetupProvider(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&v1.Provider{}).
-		//Owns(&v1.ProviderRevision{}).
+		Owns(&v1.ProviderRevision{}).
 		Complete(r)
 }
 
@@ -134,7 +171,7 @@ func NewReconciler(mgr ctrl.Manager, opts ...ReconcilerOption) *Reconciler {
 			Client:     mgr.GetClient(),
 			Applicator: resource.NewAPIPatchingApplicator(mgr.GetClient()),
 		},
-		//pkg:    NewNopRevisioner(),
+		pkg:    NewNopRevisioner(),
 		log:    logging.NewNopLogger(),
 		record: event.NewNopRecorder(),
 	}
@@ -146,10 +183,19 @@ func NewReconciler(mgr ctrl.Manager, opts ...ReconcilerOption) *Reconciler {
 	return r
 }
 
+// +kubebuilder:rbac:groups="",resources=events,verbs=get;list;watch;create;update;patch
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/finalizers,verbs=update
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers/finalizers,verbs=update
+
 // Reconcile package.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo
 	log := r.log.WithValues("request", req)
-	log.Debug("Reconciling")
+	log.Debug("Reconciling", "NameSpace", req.NamespacedName)
 
 	ctx, cancel := context.WithTimeout(ctx, reconcileTimeout)
 	defer cancel()
@@ -168,9 +214,136 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		"name", p.GetName(),
 	)
 
-	// NOTE(hasheddan): when the first package revision is created for a
-	// package, the health of the package is not set until the revision reports
-	// its health. If updating from an existing revision, the package health
-	// will match the health of the old revision until the next reconcile.
+	// Get existing package revisions.
+	prs := r.newPackageRevisionList()
+	if err := r.client.List(ctx, prs, client.MatchingLabels(map[string]string{parentLabel: p.GetName()})); resource.IgnoreNotFound(err) != nil {
+		log.Debug(errListRevisions, "error", err)
+		r.record.Event(p, event.Warning(reasonList, errors.Wrap(err, errListRevisions)))
+		return reconcile.Result{RequeueAfter: shortWait}, nil
+	}
+	log.Debug("Package Revision List", "PRL", prs)
+
+	revisionName, err := r.pkg.Revision(ctx, log, p)
+	if err != nil {
+		p.SetConditions(v1.Unpacking())
+		log.Debug(errUnpack, "error", err)
+		r.record.Event(p, event.Warning(reasonUnpack, errors.Wrap(err, errUnpack)))
+		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
+	}
+
+	log.Debug("revisionName", "revisionName", revisionName)
+
+	if revisionName == "" {
+		p.SetConditions(v1.Unpacking())
+		r.record.Event(p, event.Normal(reasonUnpack, "Waiting for unpack to complete"))
+		return reconcile.Result{RequeueAfter: veryShortWait}, errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
+	}
+
+	// Set the current revision and identifier.
+	p.SetCurrentRevision(revisionName)
+	p.SetCurrentIdentifier(p.GetSource())
+
+	pr := r.newPackageRevision()
+	maxRevision := int64(0)
+	oldestRevision := int64(math.MaxInt64)
+	oldestRevisionIndex := -1
+	revisions := prs.GetRevisions()
+
+	// Check to see if revision already exists.
+	for index, rev := range revisions {
+		revisionNum := rev.GetRevision()
+
+		// Set max revision to the highest numbered existing revision.
+		if revisionNum > maxRevision {
+			maxRevision = revisionNum
+		}
+
+		// Set oldest revision to the lowest numbered revision and record its
+		// index.
+		if revisionNum < oldestRevision {
+			oldestRevision = revisionNum
+			oldestRevisionIndex = index
+		}
+		// If revision name is same as current revision, then revision already exists.
+		if rev.GetName() == p.GetCurrentRevision() {
+			pr = rev
+			// Finish iterating through all revisions to make sure all
+			// non-current revisions are inactive.
+			continue
+		}
+		if rev.GetDesiredState() == v1.PackageRevisionActive {
+			// If revision is not the current revision, set to inactive. This
+			// should always be done, regardless of the package's revision
+			// activation policy.
+			rev.SetDesiredState(v1.PackageRevisionInactive)
+			if err := r.client.Apply(ctx, rev, resource.MustBeControllableBy(p.GetUID())); err != nil {
+				log.Debug(errUpdateInactivePackageRevision, "error", err)
+				r.record.Event(p, event.Warning(reasonTransitionRevision, errors.Wrap(err, errUpdateInactivePackageRevision)))
+				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
+			}
+		}
+	}
+
+	// The current revision should always be the highest numbered revision.
+	if pr.GetRevision() < maxRevision || maxRevision == 0 {
+		pr.SetRevision(maxRevision + 1)
+	}
+
+	// Check to see if there are revisions eligible for garbage collection.
+	if p.GetRevisionHistoryLimit() != nil &&
+		*p.GetRevisionHistoryLimit() != 0 &&
+		len(revisions) > (int(*p.GetRevisionHistoryLimit())+1) {
+		gcRev := revisions[oldestRevisionIndex]
+		// Find the oldest revision and delete it.
+		if err := r.client.Delete(ctx, gcRev); err != nil {
+			log.Debug(errGCPackageRevision, "error", err)
+			r.record.Event(p, event.Warning(reasonGarbageCollect, errors.Wrap(err, errGCPackageRevision)))
+			return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
+		}
+	}
+
+	if pr.GetCondition(v1.ConditionKindPackageHealthy).Status == corev1.ConditionTrue {
+		p.SetConditions(v1.Healthy())
+		r.record.Event(p, event.Normal(reasonInstall, "Successfully installed package revision"))
+	}
+	if pr.GetCondition(v1.ConditionKindPackageHealthy).Status == corev1.ConditionFalse {
+		p.SetConditions(v1.Unhealthy())
+		r.record.Event(p, event.Warning(reasonInstall, errors.New(errUnhealthyPackageRevision)))
+	}
+	if pr.GetCondition(v1.ConditionKindPackageHealthy).Status == corev1.ConditionUnknown {
+		p.SetConditions(v1.UnknownHealth())
+		r.record.Event(p, event.Warning(reasonInstall, errors.New(errUnknownPackageRevisionHealth)))
+	}
+
+	// Create the non-existent package revision.
+	pr.SetName(revisionName)
+	pr.SetLabels(map[string]string{parentLabel: p.GetName()})
+	pr.SetSource(p.GetSource())
+	pr.SetPackagePullPolicy(p.GetPackagePullPolicy())
+	pr.SetPackagePullSecrets(p.GetPackagePullSecrets())
+	pr.SetControllerConfigRef(p.GetControllerConfigRef())
+
+	// If current revision is not active and we have an automatic or undefined
+	// activation policy, always activate.
+	if pr.GetDesiredState() != v1.PackageRevisionActive && (p.GetActivationPolicy() == nil || *p.GetActivationPolicy() == v1.AutomaticActivation) {
+		pr.SetDesiredState(v1.PackageRevisionActive)
+	}
+
+	controlRef := meta.AsController(meta.TypedReferenceTo(p, p.GetObjectKind().GroupVersionKind()))
+	controlRef.BlockOwnerDeletion = pointer.BoolPtr(true)
+	meta.AddOwnerReference(pr, controlRef)
+	if err := r.client.Apply(ctx, pr, resource.MustBeControllableBy(p.GetUID())); err != nil {
+		log.Debug(errApplyPackageRevision, "error", err)
+		r.record.Event(p, event.Warning(reasonInstall, errors.Wrap(err, errApplyPackageRevision)))
+		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
+	}
+
+	p.SetConditions(v1.Active())
+
+	// If current revision is still not active, the package is inactive.
+	if pr.GetDesiredState() != v1.PackageRevisionActive {
+		p.SetConditions(v1.Inactive())
+	}
+
 	return pullBasedRequeue(p.GetPackagePullPolicy()), errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 Wim Henderickx.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import (
 )
 
 const (
-	errNoMatch    = "directory does not contain a compiled crossplane package"
-	errMultiMatch = "directory contains multiple compiled crossplane packages"
+	errNoMatch    = "directory does not contain a compiled ndd package"
+	errMultiMatch = "directory contains multiple compiled ndd packages"
 )
 
-// FindXpkgInDir finds compiled Crossplane packages in a directory.
+// FindXpkgInDir finds compiled Ndd packages in a directory.
 func FindXpkgInDir(fs afero.Fs, root string) (string, error) {
 	f, err := fs.Open(root)
 	if err != nil {

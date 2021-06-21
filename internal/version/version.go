@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Crossplane Authors.
+Copyright 2021 Wim Henderickx.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,17 +41,17 @@ func New() *Versioner {
 	}
 }
 
-// GetVersionString returns the current Crossplane version as string.
+// GetVersionString returns the current Ndd version as string.
 func (v *Versioner) GetVersionString() string {
 	return v.version
 }
 
-// GetSemVer returns the current Crossplane version as a semantic version.
+// GetSemVer returns the current Ndd version as a semantic version.
 func (v *Versioner) GetSemVer() (*semver.Version, error) {
 	return semver.NewVersion(v.version)
 }
 
-// InConstraints is a helper function that checks if the current Crossplane
+// InConstraints is a helper function that checks if the current Ndd
 // version is in the semantic version constraints.
 func (v *Versioner) InConstraints(c string) (bool, error) {
 	ver, err := v.GetSemVer()
