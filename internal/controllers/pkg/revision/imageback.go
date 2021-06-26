@@ -19,7 +19,6 @@ package revision
 import (
 	"archive/tar"
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/google/go-containerregistry/pkg/name"
@@ -65,7 +64,6 @@ func (i *ImageBackend) Init(ctx context.Context, bo ...parser.BackendOption) (io
 	var err error
 
 	pullPolicy := i.pr.GetPackagePullPolicy()
-	fmt.Printf("pullPolicy: %v\n", *pullPolicy)
 	if pullPolicy != nil && *pullPolicy == corev1.PullNever {
 		// If package is pre-cached we assume there are never multiple tags in
 		// the same image.
@@ -76,16 +74,13 @@ func (i *ImageBackend) Init(ctx context.Context, bo ...parser.BackendOption) (io
 	} else {
 		// Ensure source is a valid image reference.
 		ref, err := name.ParseReference(i.pr.GetSource())
-		fmt.Printf("Reference: %v\n", ref)
 		if err != nil {
 			return nil, errors.Wrap(err, errBadReference)
 		}
 		// Attempt to fetch image from cache.
 		img, err = i.cache.Get(i.pr.GetSource(), i.pr.GetName())
-		fmt.Printf("image: %v\n", img)
 		if err != nil {
 			img, err = i.fetcher.Fetch(ctx, ref, v1.RefNames(i.pr.GetPackagePullSecrets())...)
-			fmt.Printf("image: %v\n", img)
 			if err != nil {
 				return nil, errors.Wrap(err, errFetchPackage)
 			}
@@ -95,7 +90,6 @@ func (i *ImageBackend) Init(ctx context.Context, bo ...parser.BackendOption) (io
 			}
 		}
 	}
-	fmt.Printf("final image: %v\n", img)
 
 	// Extract package contents from image.
 	r := mutate.Extract(img)

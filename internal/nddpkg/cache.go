@@ -17,7 +17,6 @@ limitations under the License.
 package nddpkg
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -76,12 +75,10 @@ func (c *ImageCache) Store(tag, id string, img v1.Image) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	ref, err := name.ParseReference(tag)
-	fmt.Printf("image store reference: %v\n", ref)
 	if err != nil {
 		return err
 	}
 	cf, err := c.fs.Create(BuildPath(c.dir, id))
-	fmt.Printf("image store directory: %v, id: %v, cf: %v\n", c.dir, id, cf)
 	if err != nil {
 		return err
 	}

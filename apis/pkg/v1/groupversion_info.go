@@ -58,3 +58,11 @@ var (
 	ProviderRevisionKindAPIVersion   = ProviderRevisionKind + "." + GroupVersion.String()
 	ProviderRevisionGroupVersionKind = GroupVersion.WithKind(ProviderRevisionKind)
 )
+
+// Lock type metadata.
+var (
+	LockKind             = reflect.TypeOf(Lock{}).Name()
+	LockGroupKind        = schema.GroupKind{Group: Group, Kind: LockKind}.String()
+	LockKindAPIVersion   = LockKind + "." + GroupVersion.String()
+	LockGroupVersionKind = GroupVersion.WithKind(LockKind)
+)

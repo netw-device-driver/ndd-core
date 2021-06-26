@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package nddcorecmd
 
 import (
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -69,12 +70,9 @@ var startCmd = &cobra.Command{
 			return errors.Wrap(err, "Cannot create manager")
 		}
 
-		//log.Info("setup reconcilers/controllers")
-		//ctx := ctrl.SetupSignalHandler()
-		//setupReconcilers(ctx, mgr)
-
 		pkgCache := nddpkg.NewImageCache(cacheDir, afero.NewOsFs())
 		zlog.Info("Cache Directory", "cacheDir", cacheDir)
+		zlog.Info("Namespace", "namespace", namespace)
 
 		if err := pkg.Setup(mgr, logging.NewLogrLogger(zlog.WithName("nddcore-pkg")), pkgCache, namespace); err != nil {
 			return errors.Wrap(err, "Cannot add packages controllers to manager")
@@ -104,34 +102,10 @@ func init() {
 	startCmd.Flags().BoolVarP(&enableLeaderElection, "leader-elect", "l", false, "Enable leader election for controller manager. "+
 		"Enabling this will ensure there is only one active controller manager.")
 	startCmd.Flags().IntVarP(&concurrency, "concurrency", "", 1, "Number of items to process simultaneously")
-	startCmd.Flags().StringVarP(&namespace, "namespace", "n", viper.GetString("POD_NAMESPACE"), "Namespace used to unpack and run packages.")
+	startCmd.Flags().StringVarP(&namespace, "namespace", "n", os.Getenv("POD_NAMESPACE"), "Namespace used to unpack and run packages.")
 	startCmd.Flags().StringVarP(&cacheDir, "cache-dir", "c", "/cache", "Directory used for caching package images.")
 
 }
-
-/*
-func setupReconcilers(ctx context.Context, mgr ctrl.Manager) {
-	if err := (&drivercontrollers.NetworkNodeReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		errors.Wrap(err, "unable to create controller NetworkNode")
-	}
-	if err := (&drivercontrollers.DeviceDriverReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		errors.Wrap(err, "unable to create controller DeviceDriver")
-	}
-	if err := (&pkgcontrollers.ProviderReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		errors.Wrap(err, "unable to create controller Provider")
-		os.Exit(1)
-	}
-}
-*/
 
 func nddConcurrency(c int) controller.Options {
 	return controller.Options{MaxConcurrentReconciles: c}

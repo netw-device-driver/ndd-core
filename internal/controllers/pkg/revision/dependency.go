@@ -18,6 +18,7 @@ package revision
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
@@ -50,15 +51,17 @@ type DependencyManager interface {
 
 // PackageDependencyManager is a resolver for packages.
 type PackageDependencyManager struct {
-	client client.Client
-	newDag dag.NewDAGFn
+	client      client.Client
+	newDag      dag.NewDAGFn
+	packageType pkgmetav1.PackageType
 }
 
 // NewPackageDependencyManager creates a new PackageDependencyManager.
-func NewPackageDependencyManager(c client.Client, nd dag.NewDAGFn) *PackageDependencyManager {
+func NewPackageDependencyManager(c client.Client, nd dag.NewDAGFn, t pkgmetav1.PackageType) *PackageDependencyManager {
 	return &PackageDependencyManager{
-		client: c,
-		newDag: nd,
+		client:      c,
+		newDag:      nd,
+		packageType: t,
 	}
 }
 
@@ -69,12 +72,14 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 		return found, installed, invalid, errors.New(errNotMeta)
 	}
 
+	fmt.Printf("Package: %v\n", pack)
+
 	// Copy package dependencies into Lock Dependencies.
 	sources := make([]pkgmetav1.Dependency, len(pack.GetDependencies()))
 	for i, dep := range pack.GetDependencies() {
 		pdep := pkgmetav1.Dependency{
-			Provider: dep.Provider,
-			Version:  dep.Version,
+			Package: dep.Package,
+			Type:    pkgmetav1.ProviderPackageType,
 		}
 		sources[i] = pdep
 	}
@@ -108,10 +113,11 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 		return found, installed, invalid, nil
 	}
 
-	// NOTE(hasheddan): consider adding health of package to lock so that it can
+	// NOTE: consider adding health of package to lock so that it can
 	// be rolled up to any dependent packages.
 	self := v1.LockPackage{
 		Name:         pr.GetName(),
+		Type:         m.packageType,
 		Source:       prRef.Context().String(),
 		Version:      prRef.Identifier(),
 		Dependencies: sources,
@@ -165,10 +171,11 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 	var invalidDeps []string
 	for _, dep := range self.Dependencies {
 		// *WORKAROUND TO BE REMOVED
-		_, err := d.GetNode(*dep.Provider)
-		if err != nil {
-			return found, installed, invalid, errors.New(errDependencyNotInGraph)
-		}
+		fmt.Printf("Dependency: %v \n", dep)
+		//_, err := d.GetNode(*dep.Package)
+		//if err != nil {
+		//	return found, installed, invalid, errors.New(errDependencyNotInGraph)
+		//}
 		// TBD
 		/*
 			n, err := d.GetNode(*dep.Provider)

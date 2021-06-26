@@ -21,21 +21,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// A PackageType is a type of package.
-type PackageType string
-
-// Types of packages.
-const (
-	ProviderPackageType PackageType = "Provider"
-)
-
 // LockPackage is a package that is in the lock.
 type LockPackage struct {
 	// Name corresponds to the name of the package revision for this package.
 	Name string `json:"name"`
 
-	// Type is the type of package. Can be either Configuration or Provider.
-	Type PackageType `json:"type"`
+	// Type is the type of package. Can be Provider, maybe later other types can be created
+	Type pkgmetav1.PackageType `json:"type"`
 
 	// Source is the OCI image name without a tag or digest.
 	Source string `json:"source"`
@@ -47,21 +39,6 @@ type LockPackage struct {
 	// the dependencies will dictate the order in which they are resolved.
 	Dependencies []pkgmetav1.Dependency `json:"dependencies"`
 }
-
-/*
-// A Dependency is a dependency of a package in the lock.
-type Dependency struct {
-	// Package is the OCI image name without a tag or digest.
-	Package string `json:"package"`
-
-	// Type is the type of package. Can be Provider.
-	Type PackageType `json:"type"`
-
-	// Constraints is a valid semver range, which will be used to select a valid
-	// dependency version.
-	Constraints string `json:"constraints"`
-}
-*/
 
 // +kubebuilder:object:root=true
 // +genclient

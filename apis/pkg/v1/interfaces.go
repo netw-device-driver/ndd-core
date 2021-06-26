@@ -77,6 +77,9 @@ type Package interface {
 
 	GetCurrentIdentifier() string
 	SetCurrentIdentifier(r string)
+
+	GetSkipDependencyResolution() *bool
+	SetSkipDependencyResolution(*bool)
 }
 
 // GetCondition of this Provider.
@@ -159,6 +162,16 @@ func (p *Provider) SetCurrentRevision(s string) {
 	p.Status.CurrentRevision = s
 }
 
+// GetSkipDependencyResolution of this Provider.
+func (p *Provider) GetSkipDependencyResolution() *bool {
+	return p.Spec.SkipDependencyResolution
+}
+
+// SetSkipDependencyResolution of this Provider.
+func (p *Provider) SetSkipDependencyResolution(b *bool) {
+	p.Spec.SkipDependencyResolution = b
+}
+
 // GetCurrentIdentifier of this Provider.
 func (p *Provider) GetCurrentIdentifier() string {
 	return p.Status.CurrentIdentifier
@@ -201,11 +214,11 @@ type PackageRevision interface {
 	GetRevision() int64
 	SetRevision(r int64)
 
-	//GetSkipDependencyResolution() *bool
-	//SetSkipDependencyResolution(*bool)
+	GetSkipDependencyResolution() *bool
+	SetSkipDependencyResolution(*bool)
 
-	//GetDependencyStatus() (found, installed, invalid int64)
-	//SetDependencyStatus(found, installed, invalid int64)
+	GetDependencyStatus() (found, installed, invalid int64)
+	SetDependencyStatus(found, installed, invalid int64)
 }
 
 // GetCondition of this ProviderRevision.
@@ -240,12 +253,12 @@ func (p *ProviderRevision) SetControllerReference(c nddv1.Reference) {
 
 // GetSource of this ProviderRevision.
 func (p *ProviderRevision) GetSource() string {
-	return p.Spec.Package
+	return p.Spec.PackageImage
 }
 
 // SetSource of this ProviderRevision.
 func (p *ProviderRevision) SetSource(s string) {
-	p.Spec.Package = s
+	p.Spec.PackageImage = s
 }
 
 // GetPackagePullSecrets of this ProviderRevision.
@@ -288,6 +301,18 @@ func (p *ProviderRevision) SetRevision(r int64) {
 	p.Spec.Revision = r
 }
 
+// GetDependencyStatus of this ProviderRevision.
+func (p *ProviderRevision) GetDependencyStatus() (found, installed, invalid int64) {
+	return p.Status.FoundDependencies, p.Status.InstalledDependencies, p.Status.InvalidDependencies
+}
+
+// SetDependencyStatus of this ProviderRevision.
+func (p *ProviderRevision) SetDependencyStatus(found, installed, invalid int64) {
+	p.Status.FoundDependencies = found
+	p.Status.InstalledDependencies = installed
+	p.Status.InvalidDependencies = invalid
+}
+
 // GetControllerConfigRef of this ProviderRevision.
 func (p *ProviderRevision) GetControllerConfigRef() *nddv1.Reference {
 	return p.Spec.ControllerConfigReference
@@ -296,6 +321,16 @@ func (p *ProviderRevision) GetControllerConfigRef() *nddv1.Reference {
 // SetControllerConfigRef of this ProviderREvsion.
 func (p *ProviderRevision) SetControllerConfigRef(r *nddv1.Reference) {
 	p.Spec.ControllerConfigReference = r
+}
+
+// GetSkipDependencyResolution of this ProviderRevision.
+func (p *ProviderRevision) GetSkipDependencyResolution() *bool {
+	return p.Spec.SkipDependencyResolution
+}
+
+// SetSkipDependencyResolution of this ProviderRevision.
+func (p *ProviderRevision) SetSkipDependencyResolution(b *bool) {
+	p.Spec.SkipDependencyResolution = b
 }
 
 var _ PackageRevisionList = &ProviderRevisionList{}

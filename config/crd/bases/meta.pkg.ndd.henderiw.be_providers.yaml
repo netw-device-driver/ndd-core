@@ -104,15 +104,22 @@ spec:
                   description: Dependency is a dependency on another package. One
                     of Provider or Configuration may be supplied.
                   properties:
-                    provider:
-                      description: Provider is the name of a Provider package image.
+                    constraints:
+                      description: Constraints is a valid semver range, which will
+                        be used to select a valid dependency version.
                       type: string
-                    version:
-                      description: Version is the semantic version constraints of
-                        the dependency image.
+                    package:
+                      description: Package is the OCI image name without a tag or
+                        digest.
+                      type: string
+                    type:
+                      description: Type is the type of package. Can be either Configuration
+                        or Provider.
                       type: string
                   required:
-                  - version
+                  - constraints
+                  - package
+                  - type
                   type: object
                 type: array
               ndd:

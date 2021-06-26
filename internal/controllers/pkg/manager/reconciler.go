@@ -29,6 +29,8 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	event2 "sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
@@ -78,18 +80,6 @@ const (
 	reasonInstall            event.Reason = "InstallPackageRevision"
 )
 
-// Reconciler reconciles packages.
-type Reconciler struct {
-	client resource.ClientApplicator
-	pkg    Revisioner
-	log    logging.Logger
-	record event.Recorder
-
-	newPackage             func() v1.Package
-	newPackageRevision     func() v1.PackageRevision
-	newPackageRevisionList func() v1.PackageRevisionList
-}
-
 // ReconcilerOption is used to configure the Reconciler.
 type ReconcilerOption func(*Reconciler)
 
@@ -136,6 +126,18 @@ func WithRecorder(er event.Recorder) ReconcilerOption {
 	}
 }
 
+// Reconciler reconciles packages.
+type Reconciler struct {
+	client resource.ClientApplicator
+	pkg    Revisioner
+	log    logging.Logger
+	record event.Recorder
+
+	newPackage             func() v1.Package
+	newPackageRevision     func() v1.PackageRevision
+	newPackageRevisionList func() v1.PackageRevisionList
+}
+
 // SetupProvider adds a controller that reconciles Providers.
 func SetupProvider(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 	name := "packages/" + strings.ToLower(v1.ProviderGroupKind)
@@ -161,7 +163,21 @@ func SetupProvider(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 		Named(name).
 		For(&v1.Provider{}).
 		Owns(&v1.ProviderRevision{}).
+		//WithEventFilter(IgnoreUpdateWithoutGenerationChangePredicate()).
 		Complete(r)
+}
+
+func IgnoreUpdateWithoutGenerationChangePredicate() predicate.Predicate {
+	return predicate.Funcs{
+		UpdateFunc: func(e event2.UpdateEvent) bool {
+			// Ignore updates to CR status in which case metadata.Generation does not change
+			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
+		},
+		DeleteFunc: func(e event2.DeleteEvent) bool {
+			// Evaluates to false if the object has been confirmed deleted.
+			return !e.DeleteStateUnknown
+		},
+	}
 }
 
 // NewReconciler creates a new package reconciler.
@@ -185,6 +201,7 @@ func NewReconciler(mgr ctrl.Manager, opts ...ReconcilerOption) *Reconciler {
 
 // +kubebuilder:rbac:groups="",resources=events,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
+// +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/finalizers,verbs=update
@@ -223,6 +240,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	}
 	log.Debug("Package Revision List", "PRL", prs)
 
+	// fetch the package from the container registry
 	revisionName, err := r.pkg.Revision(ctx, log, p)
 	if err != nil {
 		p.SetConditions(v1.Unpacking())
@@ -321,6 +339,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	pr.SetSource(p.GetSource())
 	pr.SetPackagePullPolicy(p.GetPackagePullPolicy())
 	pr.SetPackagePullSecrets(p.GetPackagePullSecrets())
+	pr.SetSkipDependencyResolution(p.GetSkipDependencyResolution())
 	pr.SetControllerConfigRef(p.GetControllerConfigRef())
 
 	// If current revision is not active and we have an automatic or undefined
@@ -332,6 +351,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	controlRef := meta.AsController(meta.TypedReferenceTo(p, p.GetObjectKind().GroupVersionKind()))
 	controlRef.BlockOwnerDeletion = pointer.BoolPtr(true)
 	meta.AddOwnerReference(pr, controlRef)
+	// create providerrevision with ownerReferences
 	if err := r.client.Apply(ctx, pr, resource.MustBeControllableBy(p.GetUID())); err != nil {
 		log.Debug(errApplyPackageRevision, "error", err)
 		r.record.Event(p, event.Warning(reasonInstall, errors.Wrap(err, errApplyPackageRevision)))
@@ -345,5 +365,9 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		p.SetConditions(v1.Inactive())
 	}
 
+	// NOTE: when the first package revision is created for a
+	// package, the health of the package is not set until the revision reports
+	// its health. If updating from an existing revision, the package health
+	// will match the health of the old revision until the next reconcile.
 	return pullBasedRequeue(p.GetPackagePullPolicy()), errors.Wrap(r.client.Status().Update(ctx, p), errUpdateStatus)
 }

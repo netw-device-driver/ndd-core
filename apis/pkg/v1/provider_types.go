@@ -42,9 +42,11 @@ type ProviderStatus struct {
 // +genclient
 // +genclient:nonNamespaced
 
-// Provider is the CRD type for a request to add a provider to Network Device Driver.
+// Provider is the CRD type for a request to add a provider to Network Device Driver..
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="INSTALLED",type="string",JSONPath=".status.conditions[?(@.kind=='PackageInstalled')].status"
+// +kubebuilder:printcolumn:name="HEALTHY",type="string",JSONPath=".status.conditions[?(@.kind=='PackageHealthy')].status"
 // +kubebuilder:printcolumn:name="PACKAGE",type="string",JSONPath=".spec.package"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
 // +kubebuilder:resource:scope=Cluster,categories={ndd,pkg}

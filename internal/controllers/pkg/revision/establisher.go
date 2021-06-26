@@ -117,7 +117,6 @@ func (e *APIEstablisher) Establish(ctx context.Context, objs []runtime.Object, p
 			return nil, err
 		}
 	}
-
 	for _, cd := range allObjs {
 		if !cd.Exists {
 			if err := e.create(ctx, cd.Desired, parent, control); err != nil {
@@ -132,7 +131,6 @@ func (e *APIEstablisher) Establish(ctx context.Context, objs []runtime.Object, p
 		}
 		resourceRefs = append(resourceRefs, *meta.TypedReferenceTo(cd.Desired, cd.Desired.GetObjectKind().GroupVersionKind()))
 	}
-
 	return resourceRefs, nil
 }
 

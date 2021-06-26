@@ -20,6 +20,12 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.kind=='PackageInstalled')].status
+      name: INSTALLED
+      type: string
+    - jsonPath: .status.conditions[?(@.kind=='PackageHealthy')].status
+      name: HEALTHY
+      type: string
     - jsonPath: .spec.package
       name: PACKAGE
       type: string
@@ -30,7 +36,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: Provider is the CRD type for a request to add a provider to Network
-          Device Driver.
+          Device Driver..
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -92,6 +98,12 @@ spec:
                   disabled by explicitly setting to 0.
                 format: int64
                 type: integer
+              skipDependencyResolution:
+                default: false
+                description: SkipDependencyResolution indicates to the package manager
+                  whether to skip resolving dependencies for a package. Setting this
+                  value to true may have unintended consequences. Default is false.
+                type: boolean
             required:
             - package
             type: object

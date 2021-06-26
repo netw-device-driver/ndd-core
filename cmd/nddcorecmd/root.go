@@ -14,19 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package nddcorecmd
 
 import (
+	"context"
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 
 	driverv1 "github.com/netw-device-driver/ndd-core/apis/driver/v1"
+	metapkgv1 "github.com/netw-device-driver/ndd-core/apis/pkg/meta/v1"
 	pkgv1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
+	"github.com/netw-device-driver/ndd-core/internal/initializer"
+	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	extv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -58,5 +67,25 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(driverv1.AddToScheme(scheme))
 	utilruntime.Must(pkgv1.AddToScheme(scheme))
+	utilruntime.Must(metapkgv1.AddToScheme(scheme))
+	utilruntime.Must(extv1.AddToScheme(scheme))
+	utilruntime.Must(extv1beta1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
+
+	cfg, err := ctrl.GetConfig()
+	if err != nil {
+		fmt.Printf("cannot get config %s\n", err)
+	}
+
+	cl, err := client.New(cfg, client.Options{Scheme: scheme})
+	if err != nil {
+		fmt.Printf("cannot create new kubernetes client %s\n", err)
+	}
+	i := initializer.New(cl,
+		initializer.NewLockObject(),
+	)
+	if err := i.Init(context.TODO()); err != nil {
+		fmt.Printf("cannot initialize core %s\n", err)
+	}
+	fmt.Printf("Initialization has been completed\n")
 }

@@ -39,7 +39,7 @@ func (c *Provider) GetDependencies() []Dependency {
 
 // Identifier returns a dependency's source.
 func (d *Dependency) Identifier() string {
-	return *d.Provider
+	return d.Package
 }
 
 // Neighbors in is a no-op for dependencies because we are not yet aware of its

@@ -28,8 +28,8 @@ const (
 	errMultiMatch = "directory contains multiple compiled ndd packages"
 )
 
-// FindXpkgInDir finds compiled Ndd packages in a directory.
-func FindXpkgInDir(fs afero.Fs, root string) (string, error) {
+// FindNddpkgInDir finds compiled Ndd packages in a directory.
+func FindNddpkgInDir(fs afero.Fs, root string) (string, error) {
 	f, err := fs.Open(root)
 	if err != nil {
 		return "", err
@@ -41,8 +41,8 @@ func FindXpkgInDir(fs afero.Fs, root string) (string, error) {
 	}
 	path := ""
 	for _, file := range files {
-		// Match only returns an error if XpkgMatchPattern is malformed.
-		match, _ := filepath.Match(XpkgMatchPattern, file.Name()) //nolint:errcheck
+		// Match only returns an error if NddpkgMatchPattern is malformed.
+		match, _ := filepath.Match(NddpkgMatchPattern, file.Name()) //nolint:errcheck
 		if !match {
 			continue
 		}

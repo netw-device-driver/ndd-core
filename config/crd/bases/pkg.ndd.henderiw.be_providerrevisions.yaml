@@ -10,16 +10,36 @@ metadata:
 spec:
   group: pkg.ndd.henderiw.be
   names:
+    categories:
+    - ndd
     kind: ProviderRevision
     listKind: ProviderRevisionList
     plural: providerrevisions
     singular: providerrevision
-  scope: Namespaced
+  scope: Cluster
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.kind=='PackageHealthy')].status
+      name: HEALTHY
+      type: string
     - jsonPath: .spec.revision
       name: REVISION
       type: string
+    - jsonPath: .spec.image
+      name: IMAGE
+      type: string
+    - jsonPath: .spec.desiredState
+      name: STATE
+      type: string
+    - jsonPath: .status.foundDependencies
+      name: DEP-FOUND
+      type: string
+    - jsonPath: .status.installedDependencies
+      name: DEP-INSTALLED
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
     name: v1
     schema:
       openAPIV3Schema:
@@ -84,6 +104,12 @@ spec:
                   garbage collected based on the parent's RevisionHistoryLimit.
                 format: int64
                 type: integer
+              skipDependencyResolution:
+                default: false
+                description: SkipDependencyResolution indicates to the package manager
+                  whether to skip resolving dependencies for a package. Setting this
+                  value to true may have unintended consequences. Default is false.
+                type: boolean
             required:
             - desiredState
             - image
@@ -134,6 +160,16 @@ spec:
                 required:
                 - name
                 type: object
+              foundDependencies:
+                description: Dependency information.
+                format: int64
+                type: integer
+              installedDependencies:
+                format: int64
+                type: integer
+              invalidDependencies:
+                format: int64
+                type: integer
               objectRefs:
                 description: References to objects owned by PackageRevision.
                 items:

@@ -212,7 +212,7 @@ func SetupProviderRevision(mgr ctrl.Manager, l logging.Logger, cache nddpkg.Cach
 
 	r := NewReconciler(mgr,
 		WithCache(cache),
-		WithDependencyManager(NewPackageDependencyManager(mgr.GetClient(), dag.NewMapDag)),
+		WithDependencyManager(NewPackageDependencyManager(mgr.GetClient(), dag.NewMapDag, pkgmetav1.ProviderPackageType)),
 		WithHooks(NewProviderHooks(resource.ClientApplicator{
 			Client:     mgr.GetClient(),
 			Applicator: resource.NewAPIPatchingApplicator(mgr.GetClient()),
@@ -254,12 +254,16 @@ func NewReconciler(mgr manager.Manager, opts ...ReconcilerOption) *Reconciler {
 	return r
 }
 
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=locks,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile package revision.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo
 	log := r.log.WithValues("request", req)
-	log.Debug("Reconciling Package Revision", "NameSpace", req.NamespacedName)
+	log.Debug("Revision Reconciling Package Revision", "NameSpace", req.NamespacedName)
 
 	ctx, cancel := context.WithTimeout(ctx, reconcileTimeout)
 	defer cancel()
@@ -274,7 +278,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	log.Debug("Package Revision", "PR", pr)
 
 	if meta.WasDeleted(pr) {
-		// NOTE(hasheddan): In the event that a pre-cached package was used for this revision,
+		// NOTE: In the event that a pre-cached package was used for this revision,
 		// delete will not remove the pre-cached package image from the cache
 		// unless it has the same name as the provider revision. Delete will not
 		// return an error so we will remove finalizer and leave the image in
@@ -284,7 +288,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			r.record.Event(pr, event.Warning(reasonSync, errors.Wrap(err, errDeleteCache)))
 			return reconcile.Result{RequeueAfter: shortWait}, nil
 		}
-		// NOTE(hasheddan): if we were previously marked as inactive, we likely
+		// NOTE: if we were previously marked as inactive, we likely
 		// already removed self. If we skipped dependency resolution, we will
 		// not be present in the lock.
 		if err := r.lock.RemoveSelf(ctx, pr); err != nil {
@@ -336,14 +340,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	// Lint package using package-specific linter.
 	if err := r.linter.Lint(pkg); err != nil {
 		r.record.Event(pr, event.Warning(reasonLint, err))
-		// NOTE(hasheddan): a failed lint typically will require manual
+		// NOTE: a failed lint typically will require manual
 		// intervention, but on the off chance that we read pod logs early,
 		// which caused a linting failure, we will requeue after long wait.
 		pr.SetConditions(v1.Unhealthy())
 		return reconcile.Result{RequeueAfter: longWait}, errors.Wrap(r.client.Status().Update(ctx, pr), errUpdateStatus)
 	}
 
-	// NOTE(hasheddan): the linter should check this property already, but if a
+	// NOTE: the linter should check this property already, but if a
 	// consumer forgets to pass an option to guarantee one meta object, we check
 	// here to avoid a potential panic on 0 index below.
 	if len(pkg.GetMeta()) != 1 {
@@ -353,6 +357,18 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	}
 
 	pkgMeta, _ := nddpkg.TryConvert(pkg.GetMeta()[0], &pkgmetav1.Provider{})
+
+	// Check status of package dependencies unless package specifies to skip
+	// resolution.
+	if pr.GetSkipDependencyResolution() != nil && !*pr.GetSkipDependencyResolution() {
+		found, installed, invalid, err := r.lock.Resolve(ctx, pkgMeta, pr)
+		pr.SetDependencyStatus(int64(found), int64(installed), int64(invalid))
+		if err != nil {
+			pr.SetConditions(v1.UnknownHealth())
+			r.record.Event(pr, event.Warning(reasonDependencies, err))
+			return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, pr), errUpdateStatus)
+		}
+	}
 
 	if err := r.hook.Pre(ctx, pkgMeta, pr); err != nil {
 		log.Debug(errPreHook, "error", err)

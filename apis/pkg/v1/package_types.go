@@ -49,6 +49,14 @@ type PackageSpec struct {
 	// +optional
 	// +kubebuilder:default=IfNotPresent
 	PackagePullPolicy *corev1.PullPolicy `json:"packagePullPolicy,omitempty"`
+
+	// SkipDependencyResolution indicates to the package manager whether to skip
+	// resolving dependencies for a package. Setting this value to true may have
+	// unintended consequences.
+	// Default is false.
+	// +optional
+	// +kubebuilder:default=false
+	SkipDependencyResolution *bool `json:"skipDependencyResolution,omitempty"`
 }
 
 // PackageStatus defines the observed state of Package

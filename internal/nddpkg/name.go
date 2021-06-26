@@ -36,11 +36,11 @@ const (
 	// StreamFileMode determines the permissions on the stream file.
 	StreamFileMode os.FileMode = 0o644
 
-	// XpkgExtension is the extension for compiled ndd packages.
-	XpkgExtension string = ".xpkg"
+	// NddpkgExtension is the extension for compiled ndd packages.
+	NddpkgExtension string = ".nddpkg"
 
-	// XpkgMatchPattern is the match pattern for identifying compiled ndd packages.
-	XpkgMatchPattern string = "*" + XpkgExtension
+	// NddpkgMatchPattern is the match pattern for identifying compiled ndd packages.
+	NddpkgMatchPattern string = "*" + NddpkgExtension
 )
 
 func truncate(str string, num int) string {
@@ -80,7 +80,7 @@ func ToDNSLabel(s string) string { // nolint:gocyclo
 func BuildPath(path, name string) string {
 	full := filepath.Join(path, name)
 	ext := filepath.Ext(full)
-	return full[0:len(full)-len(ext)] + XpkgExtension
+	return full[0:len(full)-len(ext)] + NddpkgExtension
 }
 
 // ParseNameFromMeta extracts the package name from its meta file.

@@ -44,7 +44,7 @@ type PackageRevisionSpec struct {
 	DesiredState PackageRevisionDesiredState `json:"desiredState"`
 
 	// Package image used by install Pod to extract package contents.
-	Package string `json:"image"`
+	PackageImage string `json:"packageImage"`
 
 	// PackagePullSecrets are named secrets in the same namespace that can be
 	// used to fetch packages from private registries. They are also applied to
@@ -63,6 +63,14 @@ type PackageRevisionSpec struct {
 	// Revision number. Indicates when the revision will be garbage collected
 	// based on the parent's RevisionHistoryLimit.
 	Revision int64 `json:"revision"`
+
+	// SkipDependencyResolution indicates to the package manager whether to skip
+	// resolving dependencies for a package. Setting this value to true may have
+	// unintended consequences.
+	// Default is false.
+	// +optional
+	// +kubebuilder:default=false
+	SkipDependencyResolution *bool `json:"skipDependencyResolution,omitempty"`
 }
 
 // PackageRevisionStatus defines the observed state of a PackageRevision
@@ -72,13 +80,28 @@ type PackageRevisionStatus struct {
 
 	// References to objects owned by PackageRevision.
 	ObjectRefs []nddv1.TypedReference `json:"objectRefs,omitempty"`
+
+	// Dependency information.
+	FoundDependencies     int64 `json:"foundDependencies,omitempty"`
+	InstalledDependencies int64 `json:"installedDependencies,omitempty"`
+	InvalidDependencies   int64 `json:"invalidDependencies,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="REVISION",type="string",JSONPath=".spec.revision"
+// +kubebuilder:object:root=true
+// +genclient
+// +genclient:nonNamespaced
 
 // A ProviderRevision that has been added to Network device Driver.
+// +kubebuilder:subresource:status
+// +kubebuilder:storageversion
+// +kubebuilder:printcolumn:name="HEALTHY",type="string",JSONPath=".status.conditions[?(@.kind=='PackageHealthy')].status"
+// +kubebuilder:printcolumn:name="REVISION",type="string",JSONPath=".spec.revision"
+// +kubebuilder:printcolumn:name="PKGIMAGE",type="string",JSONPath=".spec.packageImage"
+// +kubebuilder:printcolumn:name="STATE",type="string",JSONPath=".spec.desiredState"
+// +kubebuilder:printcolumn:name="DEP-FOUND",type="string",JSONPath=".status.foundDependencies"
+// +kubebuilder:printcolumn:name="DEP-INSTALLED",type="string",JSONPath=".status.installedDependencies"
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:resource:scope=Cluster,categories={ndd}
 type ProviderRevision struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
