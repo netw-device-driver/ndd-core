@@ -93,8 +93,8 @@ test: manifests generate fmt vet ## Run tests.
 
 ##@ Build
 
-build: generate fmt vet ## Build manager binary and cli binary
-	go build -o bin/manager main.go
+build: generate fmt vet ## Build binaries: manager and cli
+	go build -o bin/manager ./cmd/nddcore/main.go
 	go build -o bin/kubectl-ndd ./cmd/ndd-cli/main.go
 
 run: manifests generate fmt vet ## Run a controller from your host.

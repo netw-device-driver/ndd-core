@@ -78,7 +78,7 @@ func (e *APIEstablisher) updateDeployment(ctx context.Context, name string, c *c
 	log.Debug("updating deployment...")
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "nddr-deployment-" + name,
+			Name:      "ndd-deployment-" + name,
 			Namespace: e.namespace,
 			Labels: map[string]string{
 				"netwDDriver": "ndd-" + name,

@@ -81,15 +81,19 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 			ImagePullPolicy: corev1.PullAlways,
 			//ImagePullPolicy: corev1.PullIfNotPresent,
 			Args: []string{
+				"start",
 				"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
 				"--device-name=" + fmt.Sprintf("%s", name),
+				"--auto-pilot=true",
+				"--namespace=" + fmt.Sprintf("%s", namespace),
+				"--debug",
 			},
 			Env: []corev1.EnvVar{
 				envNameSpace,
 				envPodIP,
 			},
 			Command: []string{
-				"/netwdevicedriver-gnmi",
+				"/ddriver",
 			},
 			Resources: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
@@ -106,8 +110,12 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 		log.Debug("Using the specific device driver configuration")
 		// update the argument/environment information, since this is specific for the container deployment
 		c.Args = []string{
+			"start",
 			"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
 			"--device-name=" + fmt.Sprintf("%s", name),
+			"--auto-pilot=true",
+			"--namespace=" + fmt.Sprintf("%s", namespace),
+			"--debug",
 		}
 		c.Env = []corev1.EnvVar{
 			envNameSpace,

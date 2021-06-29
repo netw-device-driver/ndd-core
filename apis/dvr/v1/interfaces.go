@@ -53,6 +53,9 @@ type Nn interface {
 
 	GetTargetEncoding() string
 	SetTargetEncoding(e *string)
+
+	GetDeviceDetails() DeviceDetails
+	SetDeviceDetails(dd *DeviceDetails) 
 }
 
 // GetCondition of this Network Node.
@@ -135,4 +138,12 @@ func (nn *NetworkNode) GetTargetEncoding() string {
 
 func (nn *NetworkNode) SetTargetEncoding(s *string) {
 	nn.Spec.Target.Encoding = s
+}
+
+func (nn *NetworkNode) GetDeviceDetails() DeviceDetails {
+	return *nn.Status.DeviceDetails
+}
+
+func (nn *NetworkNode) SetDeviceDetails(dd *DeviceDetails) {
+	nn.Status.DeviceDetails = dd
 }
