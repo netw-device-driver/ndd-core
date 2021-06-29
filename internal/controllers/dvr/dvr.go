@@ -13,5 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package v1
 
+package dvr
+
+import (
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/netw-device-driver/ndd-core/internal/controllers/dvr/networknode"
+	"github.com/netw-device-driver/ndd-runtime/pkg/logging"
+)
+
+// Setup device driver controllers.
+func Setup(mgr ctrl.Manager, l logging.Logger, namespace string) error {
+	for _, setup := range []func(ctrl.Manager, logging.Logger, string) error{
+		networknode.Setup,
+	} {
+		if err := setup(mgr, l, namespace); err != nil {
+			return err
+		}
+	}
+	return nil
+}

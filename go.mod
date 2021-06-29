@@ -10,12 +10,11 @@ require (
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200926000217-2617742802f6+incompatible // indirect
 	github.com/google/go-containerregistry v0.4.1
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20210330174036-3259211c1f24
-	github.com/netw-device-driver/ndd-runtime v0.3.29
+	github.com/netw-device-driver/ndd-runtime v0.3.30
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/afero v1.4.1
 	github.com/spf13/cobra v1.1.3
-	github.com/spf13/viper v1.7.1
 	k8s.io/api v0.21.1
 	k8s.io/apiextensions-apiserver v0.21.1
 	k8s.io/apimachinery v0.21.1

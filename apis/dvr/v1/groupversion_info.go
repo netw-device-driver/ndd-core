@@ -20,17 +20,33 @@ limitations under the License.
 package v1
 
 import (
+	"reflect"
+
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
+// Package type metadata.
+const (
+	Group   = "dvr.ndd.henderiw.be"
+	Version = "v1"
+)
+
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "driver.ndd.henderiw.be", Version: "v1"}
+	GroupVersion = schema.GroupVersion{Group: Group, Version: Version}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}
 
 	// AddToScheme adds the types in this group-version to the given scheme.
 	AddToScheme = SchemeBuilder.AddToScheme
+)
+
+// NetworkNode type metadata.
+var (
+	NetworkNodeKind             = reflect.TypeOf(NetworkNode{}).Name()
+	NetworkNodeGroupKind        = schema.GroupKind{Group: Group, Kind: NetworkNodeKind}.String()
+	NetworkNodeKindAPIVersion   = NetworkNodeKind + "." + GroupVersion.String()
+	NetworkNodeGroupVersionKind = GroupVersion.WithKind(NetworkNodeKind)
 )

@@ -49,7 +49,7 @@ type ProviderStatus struct {
 // +kubebuilder:printcolumn:name="HEALTHY",type="string",JSONPath=".status.conditions[?(@.kind=='PackageHealthy')].status"
 // +kubebuilder:printcolumn:name="PACKAGE",type="string",JSONPath=".spec.package"
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster,categories={ndd,pkg}
+// +kubebuilder:resource:scope=Cluster,categories={ndd,pkg},shortName=pvd
 type Provider struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

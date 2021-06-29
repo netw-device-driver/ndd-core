@@ -17,37 +17,24 @@ limitations under the License.
 package v1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // DeviceDriverSpec defines the desired state of DeviceDriver
 type DeviceDriverSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of DeviceDriver. Edit devicedriver_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
-// DeviceDriverStatus defines the observed state of DeviceDriver
-type DeviceDriverStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Container defines the container parameters for the device driver
+	Container *corev1.Container `json:"container,omitempty"`
 }
 
 //+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
 
 // DeviceDriver is the Schema for the devicedrivers API
 type DeviceDriver struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DeviceDriverSpec   `json:"spec,omitempty"`
-	Status DeviceDriverStatus `json:"status,omitempty"`
+	Spec DeviceDriverSpec `json:"spec,omitempty"`
 }
 
 //+kubebuilder:object:root=true

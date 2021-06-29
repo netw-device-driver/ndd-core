@@ -12,9 +12,12 @@ spec:
   names:
     categories:
     - ndd
+    - pkg
     kind: ProviderRevision
     listKind: ProviderRevisionList
     plural: providerrevisions
+    shortNames:
+    - pvr
     singular: providerrevision
   scope: Cluster
   versions:
@@ -25,8 +28,8 @@ spec:
     - jsonPath: .spec.revision
       name: REVISION
       type: string
-    - jsonPath: .spec.image
-      name: IMAGE
+    - jsonPath: .spec.packageImage
+      name: PKGIMAGE
       type: string
     - jsonPath: .spec.desiredState
       name: STATE
@@ -74,7 +77,7 @@ spec:
                 description: DesiredState of the PackageRevision. Can be either Active
                   or Inactive.
                 type: string
-              image:
+              packageImage:
                 description: Package image used by install Pod to extract package
                   contents.
                 type: string
@@ -112,7 +115,7 @@ spec:
                 type: boolean
             required:
             - desiredState
-            - image
+            - packageImage
             - revision
             type: object
           status:

@@ -16,6 +16,8 @@ spec:
     kind: Provider
     listKind: ProviderList
     plural: providers
+    shortNames:
+    - pvd
     singular: provider
   scope: Cluster
   versions:

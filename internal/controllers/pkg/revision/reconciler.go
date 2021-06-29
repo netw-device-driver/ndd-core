@@ -41,15 +41,15 @@ import (
 )
 
 const (
-	reconcileTimeout = 1 * time.Minute
-
-	shortWait = 30 * time.Second
-	longWait  = 1 * time.Minute
-)
-
-const (
+	// Finalizer
 	finalizer = "revision.pkg.henderiw.be"
 
+	// Timers
+	reconcileTimeout = 1 * time.Minute
+	shortWait        = 30 * time.Second
+	longWait         = 1 * time.Minute
+
+	// Errors
 	errGetPackageRevision = "cannot get package revision"
 	errUpdateStatus       = "cannot update package revision status"
 
@@ -66,10 +66,8 @@ const (
 	errPostHook = "cannot run post establish hook for package"
 
 	errEstablishControl = "cannot establish control of object"
-)
 
-// Event reasons.
-const (
+	// Event reasons
 	reasonParse        event.Reason = "ParsePackage"
 	reasonLint         event.Reason = "LintPackage"
 	reasonDependencies event.Reason = "ResolveDependencies"

@@ -5,7 +5,7 @@ metadata:
   name: networknode-viewer-role
 rules:
 - apiGroups:
-  - driver.ndd.henderiw.be
+  - dvr.ndd.henderiw.be
   resources:
   - networknodes
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - driver.ndd.henderiw.be
+  - dvr.ndd.henderiw.be
   resources:
   - networknodes/status
   verbs:

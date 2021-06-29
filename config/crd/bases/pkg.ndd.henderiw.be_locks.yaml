@@ -10,9 +10,14 @@ metadata:
 spec:
   group: pkg.ndd.henderiw.be
   names:
+    categories:
+    - ndd
+    - pkg
     kind: Lock
     listKind: LockList
     plural: locks
+    shortNames:
+    - lock
     singular: lock
   scope: Cluster
   versions:

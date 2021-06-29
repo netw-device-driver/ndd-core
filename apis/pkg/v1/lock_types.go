@@ -47,7 +47,7 @@ type LockPackage struct {
 // LockSpec is the CRD type that tracks package dependencies.
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:resource:scope=Cluster,categories={ndd,pkg},shortName=lock
 type Lock struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
