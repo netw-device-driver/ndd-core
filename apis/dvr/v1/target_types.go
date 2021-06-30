@@ -17,7 +17,7 @@ limitations under the License.
 package v1
 
 const (
-	configmapJsonConfig      = "config.json"
+	ConfigmapJsonConfig      = "config.json"
 	LabelApplication         = "app"
 	LabelNetworkDeviceDriver = "ndd"
 	PrefixNetworkNode        = "ndd"
