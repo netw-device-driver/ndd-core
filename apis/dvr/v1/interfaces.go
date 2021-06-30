@@ -55,7 +55,7 @@ type Nn interface {
 	SetTargetEncoding(e *string)
 
 	GetDeviceDetails() DeviceDetails
-	SetDeviceDetails(dd *DeviceDetails) 
+	SetDeviceDetails(dd *DeviceDetails)
 }
 
 // GetCondition of this Network Node.

@@ -34,9 +34,9 @@ const (
 	// A DeviceDriverHealthy indicates whether the device driver is healthy.
 	ConditionKindDeviceDriverHealthy nddv1.ConditionKind = "DeviceDriverHealthy"
 
-	// A DeviceDriverDiscovered indicates whether the device driver is discovered
+	// A ConditionKindDeviceDriverReady indicates whether the device driver is discovered
 	// and connected to the network device.
-	ConditionKindDeviceDriverDiscovered nddv1.ConditionKind = "DeviceDriverDiscovered"
+	ConditionKindDeviceDriverReady nddv1.ConditionKind = "DeviceDriverReady"
 )
 
 // ConditionReasons a package is or is not installed.
@@ -105,7 +105,7 @@ func UnknownHealth() nddv1.Condition {
 // Discovered indicates that the device driver is discovered.
 func Discovered() nddv1.Condition {
 	return nddv1.Condition{
-		Kind:               ConditionKindDeviceDriverDiscovered,
+		Kind:               ConditionKindDeviceDriverReady,
 		Status:             corev1.ConditionTrue,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ConditionReasonDiscoveredReady,
@@ -115,7 +115,7 @@ func Discovered() nddv1.Condition {
 // NotDiscovered indicates that the device driver is not discovered.
 func NotDiscovered() nddv1.Condition {
 	return nddv1.Condition{
-		Kind:               ConditionKindDeviceDriverDiscovered,
+		Kind:               ConditionKindDeviceDriverReady,
 		Status:             corev1.ConditionFalse,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ConditionReasonNotDiscovered,
@@ -125,7 +125,7 @@ func NotDiscovered() nddv1.Condition {
 // UnknownDiscovery indicates that the device driver discovery is unknown.
 func UnknownDiscovery() nddv1.Condition {
 	return nddv1.Condition{
-		Kind:               ConditionKindDeviceDriverDiscovered,
+		Kind:               ConditionKindDeviceDriverReady,
 		Status:             corev1.ConditionFalse,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ConditionReasonUnknownDiscovery,
