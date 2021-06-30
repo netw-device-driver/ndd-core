@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	dvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
+	ndddvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
 	"github.com/netw-device-driver/ndd-runtime/pkg/event"
 	"github.com/netw-device-driver/ndd-runtime/pkg/logging"
 	"github.com/netw-device-driver/ndd-runtime/pkg/meta"
@@ -110,7 +110,7 @@ type Reconciler struct {
 
 // Setup adds a controller that reconciles the Lock.
 func Setup(mgr ctrl.Manager, l logging.Logger, namespace string) error {
-	name := "dvr/" + strings.ToLower(dvrv1.NetworkNodeKind)
+	name := "dvr/" + strings.ToLower(ndddvrv1.NetworkNodeKind)
 
 	r := NewReconciler(mgr,
 		WithLogger(l.WithValues("controller", name)),
@@ -127,9 +127,9 @@ func Setup(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
-		For(&dvrv1.NetworkNode{}).
+		For(&ndddvrv1.NetworkNode{}).
 		Watches(
-			&source.Kind{Type: &dvrv1.DeviceDriver{}},
+			&source.Kind{Type: &ndddvrv1.DeviceDriver{}},
 			handler.EnqueueRequestsFromMapFunc(r.DeviceDriverMapFunc),
 		).
 		WithEventFilter(resource.IgnoreUpdateWithoutGenerationChangePredicate()).
@@ -167,7 +167,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	log := r.log.WithValues("request", req)
 	log.Debug("Network Node", "NameSpace", req.NamespacedName)
 
-	nn := &dvrv1.NetworkNode{}
+	nn := &ndddvrv1.NetworkNode{}
 	if err := r.client.Get(ctx, req.NamespacedName, nn); err != nil {
 		// There's no need to requeue if we no longer exist. Otherwise we'll be
 		// requeued implicitly because we return an error.
@@ -175,15 +175,15 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		return reconcile.Result{}, errors.Wrap(resource.IgnoreNotFound(err), errGetNetworkNode)
 	}
 	log.Debug("network Node", "NN", nn)
-	log.Debug("Health status", "status", nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status)
+	log.Debug("Health status", "status", nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status)
 
 	if meta.WasDeleted(nn) {
 		// remove delete the configmap, service, deployment when the service was healthy
-		if nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
+		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(dvrv1.Unhealthy(), dvrv1.Inactive(), dvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
@@ -213,17 +213,17 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	log.Debug("Network node creds", "creds", creds, "err", err)
 	if err != nil || creds == nil {
 		// remove delete the configmap, service, deployment when the service was healthy
-		if nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
+		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(dvrv1.Unhealthy(), dvrv1.Inactive(), dvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
 		log.Debug(errCredentials, "error", err)
 		r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCredentials)))
-		nn.SetConditions(dvrv1.Unhealthy(), dvrv1.Inactive(), dvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 
@@ -233,26 +233,26 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	c, err := r.validator.ValidateDeviceDriver(ctx, nn.Namespace, nn.Name, string(*nn.Spec.DeviceDriverKind), *nn.Spec.GrpcServerPort)
 	log.Debug("Validate device driver", "containerInfo", c, "err", err)
 	if err != nil || c == nil {
-		if nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
+		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(dvrv1.Unhealthy(), dvrv1.Inactive(), dvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
 	}
 
-	log.Debug("Health status", "status", nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status)
-	if nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionFalse ||
-		nn.GetCondition(dvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionUnknown {
+	log.Debug("Health status", "status", nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status)
+	if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionFalse ||
+		nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionUnknown {
 		if err := r.objects.Create(ctx, nn.Name, *nn.Spec.GrpcServerPort, c); err != nil {
 			log.Debug(errCreateObjects, "error", err)
 			r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCreateObjects)))
-			nn.SetConditions(dvrv1.Unhealthy(), dvrv1.Inactive(), dvrv1.NotDiscovered())
+			nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
 			return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 		}
-		nn.SetConditions(dvrv1.Healthy(), dvrv1.Active(), dvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.Active(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 	return reconcile.Result{}, nil
@@ -264,7 +264,7 @@ func (r *Reconciler) DeviceDriverMapFunc(o client.Object) []ctrl.Request {
 	log := r.log.WithValues("deviceDriver Object", o)
 	result := []ctrl.Request{}
 
-	dd, ok := o.(*dvrv1.DeviceDriver)
+	dd, ok := o.(*ndddvrv1.DeviceDriver)
 	if !ok {
 		panic(fmt.Sprintf("Expected a DeviceDriver but got a %T", o))
 	}
@@ -274,7 +274,7 @@ func (r *Reconciler) DeviceDriverMapFunc(o client.Object) []ctrl.Request {
 		client.InNamespace(dd.Namespace),
 		client.MatchingLabels{},
 	}
-	nn := &dvrv1.NetworkNodeList{}
+	nn := &ndddvrv1.NetworkNodeList{}
 	if err := r.client.List(context.TODO(), nn, selectors...); err != nil {
 		return result
 	}

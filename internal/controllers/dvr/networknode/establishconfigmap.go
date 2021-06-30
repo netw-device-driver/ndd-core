@@ -18,7 +18,9 @@ package networknode
 
 import (
 	"context"
+	"strings"
 
+	ndddvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,10 +39,10 @@ func (e *APIEstablisher) createConfigMap(ctx context.Context, name string) error
 	log.Debug("creating configmap...")
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-cm-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixConfigmap, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 	}
@@ -58,10 +60,10 @@ func (e *APIEstablisher) deleteConfigMap(ctx context.Context, name string) error
 
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-cm-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixConfigmap, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 	}
@@ -79,10 +81,10 @@ func (e *APIEstablisher) updateConfigMap(ctx context.Context, name string) error
 
 	cm := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-cm-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixConfigmap, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 	}

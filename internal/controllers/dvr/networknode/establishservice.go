@@ -18,7 +18,9 @@ package networknode
 
 import (
 	"context"
+	"strings"
 
+	ndddvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,15 +41,15 @@ func (e *APIEstablisher) createService(ctx context.Context, name string, port in
 
 	s := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-service-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixService, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "ndd-" + name,
+				ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -75,15 +77,15 @@ func (e *APIEstablisher) updateService(ctx context.Context, name string, port in
 
 	s := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-service-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixService, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "ndd-" + name,
+				ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -110,15 +112,15 @@ func (e *APIEstablisher) deleteService(ctx context.Context, name string) error {
 
 	s := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-service-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixService, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "ndd-" + name,
+				ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 	}

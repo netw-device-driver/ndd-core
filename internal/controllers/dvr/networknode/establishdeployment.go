@@ -18,7 +18,9 @@ package networknode
 
 import (
 	"context"
+	"strings"
 
+	ndddvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
 	"github.com/pkg/errors"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -38,23 +40,23 @@ func (e *APIEstablisher) createDeployment(ctx context.Context, name string, c *c
 	log.Debug("creating deployment...")
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-deployment-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "ndd-" + name,
+					ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "ndd-" + name,
+						ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -78,23 +80,23 @@ func (e *APIEstablisher) updateDeployment(ctx context.Context, name string, c *c
 	log.Debug("updating deployment...")
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-deployment-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 		Spec: appv1.DeploymentSpec{
 			Replicas: int32Ptr(1),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "ndd-" + name,
+					ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 				},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "ndd-" + name,
+						ndddvrv1.LabelApplication: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -120,10 +122,10 @@ func (e *APIEstablisher) deleteDeployment(ctx context.Context, name string) erro
 
 	deployment := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "ndd-deployment-" + name,
+			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
 			Labels: map[string]string{
-				"netwDDriver": "ndd-" + name,
+				ndddvrv1.LabelNetworkDeviceDriver: strings.Join([]string{ndddvrv1.PrefixNetworkNode, name}, "-"),
 			},
 		},
 	}

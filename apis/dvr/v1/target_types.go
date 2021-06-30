@@ -16,6 +16,15 @@ limitations under the License.
 
 package v1
 
+const (
+	LabelApplication         = "app"
+	LabelNetworkDeviceDriver = "ndd"
+	PrefixNetworkNode        = "ndd"
+	PrefixConfigmap          = "ndd-cm"
+	PrefixDeployment         = "ndd-dep"
+	PrefixService            = "ndd-svc"
+)
+
 // DeviceDriverKind represents the kinds of device drivers are supported
 // by the network device driver
 type DeviceDriverKind string
