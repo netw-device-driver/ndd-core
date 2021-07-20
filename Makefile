@@ -36,7 +36,8 @@ IMAGE_TAG_BASE ?= ndd.henderiw.be/ndd-core
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= henderiw/nddcore:latest
+IMG_CORE ?= henderiw/nddcore:latest
+IMG_RBAC ?= henderiw/nddrbac:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 
@@ -93,18 +94,35 @@ test: manifests generate fmt vet ## Run tests.
 
 ##@ Build
 
-build: generate fmt vet ## Build binaries: manager and cli
-	go build -o bin/manager ./cmd/nddcore/main.go
-	go build -o bin/kubectl-ndd ./cmd/ndd-cli/main.go
+build: generate fmt vet ## Build binaries: core, rbac and cli
+	go build -o bin/core ./cmd/core/main.go
+	go build -o bin/rbac ./cmd/rbac/main.go
+	go build -o bin/kubectl-ndd ./cmd/cli/main.go
 
 run: manifests generate fmt vet ## Run a controller from your host.
 	go run ./main.go
 
-docker-build: test ## Build docker image with the manager.
-	docker build -t ${IMG} .
+docker-build: test ## Build docker images.
+##  docker build -t ${IMG} .
+	docker build -f DockerfileCore -t ${IMG_CORE} .
+	docker build -f DockerfileRbac -t ${IMG_RBAC} .
 
-docker-push: ## Push docker image with the manager.
-	docker push ${IMG}
+docker-build-core: test ## Build docker images.
+	docker build -f DockerfileCore -t ${IMG_CORE} .
+
+docker-build-rbac: test ## Build docker images.
+	docker build -f DockerfileRbac -t ${IMG_RBAC} .
+
+docker-push: ## Push docker images.
+##  docker push ${IMG}
+	docker push ${IMG_CORE}
+	docker push ${IMG_RBAC}
+
+docker-push-core: ## Push docker images.
+	docker push ${IMG_CORE}
+
+docker-push-rbac: ## Push docker images.
+	docker push ${IMG_RBAC}
 
 ##@ Deployment
 
@@ -115,7 +133,8 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
 deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	cd config/nddcore && $(KUSTOMIZE) edit set image controller=${IMG_CORE}
+	cd config/nddrbac && $(KUSTOMIZE) edit set image controller=${IMG_RBAC}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.

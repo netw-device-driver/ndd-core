@@ -19,6 +19,7 @@ package v1
 import (
 	nddv1 "github.com/netw-device-driver/ndd-runtime/apis/common/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -85,6 +86,11 @@ type PackageRevisionStatus struct {
 	FoundDependencies     int64 `json:"foundDependencies,omitempty"`
 	InstalledDependencies int64 `json:"installedDependencies,omitempty"`
 	InvalidDependencies   int64 `json:"invalidDependencies,omitempty"`
+
+	// PermissionRequests made by this package. The package declares that its
+	// controller needs these permissions to run. The RBAC manager is
+	// responsible for granting them.
+	PermissionRequests []rbacv1.PolicyRule `json:"permissionRequests,omitempty"`
 }
 
 // +kubebuilder:object:root=true

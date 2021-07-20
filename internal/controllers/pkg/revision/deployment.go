@@ -1,3 +1,19 @@
+/*
+Copyright 2021 Wim Henderickx.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package revision
 
 import (
@@ -30,6 +46,25 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 	pullPolicy := corev1.PullIfNotPresent
 	if revision.GetPackagePullPolicy() != nil {
 		pullPolicy = *revision.GetPackagePullPolicy()
+	}
+	// environment parameters used in the device driver
+	envNameSpace := corev1.EnvVar{
+		Name: "POD_NAMESPACE",
+		ValueFrom: &corev1.EnvVarSource{
+			FieldRef: &corev1.ObjectFieldSelector{
+				APIVersion: "v1",
+				FieldPath:  "metadata.namespace",
+			},
+		},
+	}
+	envPodIP := corev1.EnvVar{
+		Name: "POD_IP",
+		ValueFrom: &corev1.EnvVarSource{
+			FieldRef: &corev1.ObjectFieldSelector{
+				APIVersion: "v1",
+				FieldPath:  "status.podIP",
+			},
+		},
 	}
 	d := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -67,6 +102,17 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 								AllowPrivilegeEscalation: &allowPrivilegeEscalation,
 								Privileged:               &privileged,
 								RunAsNonRoot:             &runAsNonRoot,
+							},
+							Args: []string{
+								"start",
+								"--debug",
+							},
+							Env: []corev1.EnvVar{
+								envNameSpace,
+								envPodIP,
+							},
+							Command: []string{
+								"/manager",
 							},
 						},
 					},

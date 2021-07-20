@@ -38,7 +38,7 @@ const (
 func (e *APIEstablisher) createDeployment(ctx context.Context, name string, c *corev1.Container) error {
 	log := e.log.WithValues("createDeploymentName", name, "container", c)
 	log.Debug("creating deployment...")
-	deployment := &appv1.Deployment{
+	d := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
@@ -60,6 +60,7 @@ func (e *APIEstablisher) createDeployment(ctx context.Context, name string, c *c
 					},
 				},
 				Spec: corev1.PodSpec{
+					ServiceAccountName: name,
 					Containers: []corev1.Container{
 						*c,
 					},
@@ -68,7 +69,7 @@ func (e *APIEstablisher) createDeployment(ctx context.Context, name string, c *c
 		},
 	}
 
-	if err := e.client.Create(ctx, deployment); err != nil {
+	if err := e.client.Create(ctx, d); err != nil {
 		return errors.Wrap(err, errCreateDeployment)
 	}
 	log.Debug("created deployment...")
@@ -78,7 +79,7 @@ func (e *APIEstablisher) createDeployment(ctx context.Context, name string, c *c
 func (e *APIEstablisher) updateDeployment(ctx context.Context, name string, c *corev1.Container) error {
 	log := e.log.WithValues("updateDeploymentName", name, "container", c)
 	log.Debug("updating deployment...")
-	deployment := &appv1.Deployment{
+	d := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
@@ -100,6 +101,7 @@ func (e *APIEstablisher) updateDeployment(ctx context.Context, name string, c *c
 					},
 				},
 				Spec: corev1.PodSpec{
+					ServiceAccountName: name,
 					Containers: []corev1.Container{
 						*c,
 					},
@@ -108,7 +110,7 @@ func (e *APIEstablisher) updateDeployment(ctx context.Context, name string, c *c
 		},
 	}
 
-	err := e.client.Update(ctx, deployment)
+	err := e.client.Update(ctx, d)
 	if err != nil {
 		return errors.Wrap(err, errUpdateDeployment)
 	}
@@ -120,7 +122,7 @@ func (e *APIEstablisher) deleteDeployment(ctx context.Context, name string) erro
 	log := e.log.WithValues("deleteDeploymentName", name)
 	log.Debug("deleting deployment...")
 
-	deployment := &appv1.Deployment{
+	d := &appv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      strings.Join([]string{ndddvrv1.PrefixDeployment, name}, "-"),
 			Namespace: e.namespace,
@@ -129,7 +131,7 @@ func (e *APIEstablisher) deleteDeployment(ctx context.Context, name string) erro
 			},
 		},
 	}
-	err := e.client.Delete(ctx, deployment)
+	err := e.client.Delete(ctx, d)
 	if err != nil {
 		return errors.Wrap(err, errDeleteDeployment)
 

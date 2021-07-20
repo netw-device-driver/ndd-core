@@ -24,6 +24,7 @@ import (
 	metav1 "github.com/netw-device-driver/ndd-core/apis/pkg/meta/v1"
 	commonv1 "github.com/netw-device-driver/ndd-runtime/apis/common/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -333,6 +334,13 @@ func (in *PackageRevisionStatus) DeepCopyInto(out *PackageRevisionStatus) {
 		in, out := &in.ObjectRefs, &out.ObjectRefs
 		*out = make([]commonv1.TypedReference, len(*in))
 		copy(*out, *in)
+	}
+	if in.PermissionRequests != nil {
+		in, out := &in.PermissionRequests, &out.PermissionRequests
+		*out = make([]rbacv1.PolicyRule, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 

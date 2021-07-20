@@ -62,7 +62,13 @@ func (e *APIEstablisher) Create(ctx context.Context, name string, port int, c *c
 	if err := e.createService(ctx, name, port); err != nil {
 		return err
 	}
+	if err := e.createServiceAccount(ctx, name); err != nil {
+		return err
+	}
 	if err := e.createDeployment(ctx, name, c); err != nil {
+		return err
+	}
+	if err := e.createClusterRoleBinding(ctx, name); err != nil {
 		return err
 	}
 	return nil
@@ -76,7 +82,13 @@ func (e *APIEstablisher) Update(ctx context.Context, name string, port int, c *c
 	if err := e.updateService(ctx, name, port); err != nil {
 		return err
 	}
+	if err := e.createServiceAccount(ctx, name); err != nil {
+		return err
+	}
 	if err := e.updateDeployment(ctx, name, c); err != nil {
+		return err
+	}
+	if err := e.updateClusterRoleBinding(ctx, name); err != nil {
 		return err
 	}
 	return nil
@@ -91,6 +103,12 @@ func (e *APIEstablisher) Delete(ctx context.Context, name string) error { // nol
 		return err
 	}
 	if err := e.deleteDeployment(ctx, name); err != nil {
+		return err
+	}
+	if err := e.deleteServiceAccount(ctx, name); err != nil {
+		return err
+	}
+	if err := e.deleteClusterRoleBinding(ctx, name); err != nil {
 		return err
 	}
 	return nil

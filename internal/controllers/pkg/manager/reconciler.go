@@ -29,8 +29,6 @@ import (
 	"k8s.io/utils/pointer"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	event2 "sigs.k8s.io/controller-runtime/pkg/event"
-	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
@@ -163,21 +161,7 @@ func SetupProvider(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 		Named(name).
 		For(&v1.Provider{}).
 		Owns(&v1.ProviderRevision{}).
-		//WithEventFilter(IgnoreUpdateWithoutGenerationChangePredicate()).
 		Complete(r)
-}
-
-func IgnoreUpdateWithoutGenerationChangePredicate() predicate.Predicate {
-	return predicate.Funcs{
-		UpdateFunc: func(e event2.UpdateEvent) bool {
-			// Ignore updates to CR status in which case metadata.Generation does not change
-			return e.ObjectOld.GetGeneration() != e.ObjectNew.GetGeneration()
-		},
-		DeleteFunc: func(e event2.DeleteEvent) bool {
-			// Evaluates to false if the object has been confirmed deleted.
-			return !e.DeleteStateUnknown
-		},
-	}
 }
 
 // NewReconciler creates a new package reconciler.
