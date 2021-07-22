@@ -103,7 +103,7 @@ type GrpcServerDetails struct {
 // DeviceDetails collects information about the deiscovered device
 type DeviceDetails struct {
 	// the Type of device the device driver is connected to
-	Type *nddv1.DeviceKind `json:"type,omitempty"`
+	Type *nddv1.DeviceType `json:"type,omitempty"`
 
 	// Host name of the device the device driver is connected to
 	HostName *string `json:"hostname,omitempty"`
