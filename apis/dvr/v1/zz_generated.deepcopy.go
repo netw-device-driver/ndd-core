@@ -31,7 +31,7 @@ func (in *DeviceDetails) DeepCopyInto(out *DeviceDetails) {
 	*out = *in
 	if in.Type != nil {
 		in, out := &in.Type, &out.Type
-		*out = new(commonv1.DeviceKind)
+		*out = new(commonv1.DeviceType)
 		**out = **in
 	}
 	if in.HostName != nil {
