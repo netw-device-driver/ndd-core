@@ -27,6 +27,9 @@ type Nn interface {
 	resource.Object
 	resource.Conditioned
 
+	GetControllerReference() nddv1.Reference
+	SetControllerReference(c nddv1.Reference)
+
 	GetGrpcServerPort() int
 	SetGrpcServerPort(p *int)
 
@@ -63,9 +66,19 @@ func (nn *NetworkNode) GetCondition(ct nddv1.ConditionKind) nddv1.Condition {
 	return nn.Status.GetCondition(ct)
 }
 
-// SetConditions of this Network Node.
+// SetConditions of the Network Node.
 func (nn *NetworkNode) SetConditions(c ...nddv1.Condition) {
 	nn.Status.SetConditions(c...)
+}
+
+// GetControllerReference of the Network Node.
+func (nn *NetworkNode) GetControllerReference() nddv1.Reference {
+	return nn.Status.ControllerRef
+}
+
+// SetControllerReference of the Network Node.
+func (nn *NetworkNode) SetControllerReference(c nddv1.Reference) {
+	nn.Status.ControllerRef = c
 }
 
 func (nn *NetworkNode) GetGrpcServerPort() int {

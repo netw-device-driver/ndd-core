@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package networknode
+package nn
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -31,7 +30,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -48,6 +46,7 @@ const (
 	reconcileTimeout = 1 * time.Minute
 	shortWait        = 30 * time.Second
 	veryShortWait    = 5 * time.Second
+	longWait         = 1 * time.Minute
 
 	// Errors
 	errGetNetworkNode = "cannot get network node resource"
@@ -68,6 +67,20 @@ const (
 // ReconcilerOption is used to configure the Reconciler.
 type ReconcilerOption func(*Reconciler)
 
+// WithNewNetworkNodeFn determines the type of network node being reconciled.
+func WithNewNetworkNodeFn(f func() ndddvrv1.Nn) ReconcilerOption {
+	return func(r *Reconciler) {
+		r.newNetworkNode = f
+	}
+}
+
+// WithHooks specifies how the Reconciler should deploy a device driver
+func WithHooks(h Hooks) ReconcilerOption {
+	return func(r *Reconciler) {
+		r.hooks = h
+	}
+}
+
 // WithLogger specifies how the Reconciler should log messages.
 func WithLogger(log logging.Logger) ReconcilerOption {
 	return func(r *Reconciler) {
@@ -79,14 +92,6 @@ func WithLogger(log logging.Logger) ReconcilerOption {
 func WithRecorder(er event.Recorder) ReconcilerOption {
 	return func(r *Reconciler) {
 		r.record = er
-	}
-}
-
-// WithEstablisher specifies how the reconciler should create/delete/update
-// resources through the k8s api
-func WithEstablisher(er *APIEstablisher) ReconcilerOption {
-	return func(r *Reconciler) {
-		r.objects = er
 	}
 }
 
@@ -102,36 +107,40 @@ func WithValidator(v Validator) ReconcilerOption {
 type Reconciler struct {
 	client      client.Client
 	nnFinalizer resource.Finalizer
+	hooks       Hooks
+	validator   Validator
 	log         logging.Logger
 	record      event.Recorder
-	objects     Establisher
-	validator   Validator
+
+	newNetworkNode func() ndddvrv1.Nn
 }
 
 // Setup adds a controller that reconciles the Lock.
 func Setup(mgr ctrl.Manager, l logging.Logger, namespace string) error {
 	name := "dvr/" + strings.ToLower(ndddvrv1.NetworkNodeKind)
+	nn := func() ndddvrv1.Nn { return &ndddvrv1.NetworkNode{} }
 
 	r := NewReconciler(mgr,
 		WithLogger(l.WithValues("controller", name)),
 		WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
-		WithEstablisher(NewAPIEstablisher(resource.ClientApplicator{
+		WithHooks(NewDeviceDriverHooks(resource.ClientApplicator{
 			Client:     mgr.GetClient(),
 			Applicator: resource.NewAPIPatchingApplicator(mgr.GetClient()),
 		}, l, namespace)),
+		WithNewNetworkNodeFn(nn),
 		WithValidator(NewNnValidator(resource.ClientApplicator{
 			Client:     mgr.GetClient(),
 			Applicator: resource.NewAPIPatchingApplicator(mgr.GetClient()),
 		}, l)),
 	)
 
+	h := &EnqueueRequestForAllDeviceDriversWithRequests{
+		client: mgr.GetClient()}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		Named(name).
 		For(&ndddvrv1.NetworkNode{}).
-		Watches(
-			&source.Kind{Type: &ndddvrv1.DeviceDriver{}},
-			handler.EnqueueRequestsFromMapFunc(r.DeviceDriverMapFunc),
-		).
+		Watches(&source.Kind{Type: &ndddvrv1.DeviceDriver{}}, h).
 		WithEventFilter(resource.IgnoreUpdateWithoutGenerationChangePredicate()).
 		Complete(r)
 }
@@ -152,18 +161,7 @@ func NewReconciler(mgr manager.Manager, opts ...ReconcilerOption) *Reconciler {
 	return r
 }
 
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
-// +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;delete
-// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
-// +kubebuilder:rbac:groups="",resources=pods,verbs=list;watch;get;patch;create;update;delete
-// +kubebuilder:rbac:groups="",resources=secrets,verbs=list;watch;get
-// +kubebuilder:rbac:groups="",resources=events,verbs=list;watch;get;patch;create;update;delete
-// +kubebuilder:rbac:groups=dvr.ndd.henderiw.be,resources=devicedrivers,verbs=get;list;watch
-// +kubebuilder:rbac:groups=dvr.ndd.henderiw.be,resources=networknodes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=dvr.ndd.henderiw.be,resources=networknodes/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=dvr.ndd.henderiw.be,resources=networknodes/finalizers,verbs=update
-
-// Reconcile network node.
+// Reconcile package revision.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo
 	log := r.log.WithValues("request", req)
 	log.Debug("Network Node", "NameSpace", req.NamespacedName)
@@ -175,19 +173,12 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		log.Debug(errGetNetworkNode, "error", err)
 		return reconcile.Result{}, errors.Wrap(resource.IgnoreNotFound(err), errGetNetworkNode)
 	}
-	log.Debug("network Node", "NN", nn)
 	log.Debug("Health status", "status", nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status)
 
 	if meta.WasDeleted(nn) {
-		// remove delete the configmap, service, deployment when the service was healthy
-		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
-			if err := r.objects.Delete(ctx, nn.Name); err != nil {
-				log.Debug(errDeleteObjects, "error", err)
-				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
-				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
-			}
-		}
+		// the k8s garbage collector will delete all the objects that has the ownerreference set
+		// as such we dont have to delete the child objects: configmap, service, deployment, serviceaccount, clusterrolebinding
+
 		// Delete finalizer after the object is deleted
 		if err := r.nnFinalizer.RemoveFinalizer(ctx, nn); err != nil {
 			log.Debug(errRemoveFinalizer, "error", err)
@@ -212,7 +203,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	if err != nil || creds == nil {
 		// remove delete the configmap, service, deployment when the service was healthy
 		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
-			if err := r.objects.Delete(ctx, nn.Name); err != nil {
+			if err := r.hooks.Destroy(ctx, nn, &corev1.Container{}); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
 				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
@@ -232,7 +223,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	log.Debug("Validate device driver", "containerInfo", c, "err", err)
 	if err != nil || c == nil {
 		if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionTrue {
-			if err := r.objects.Delete(ctx, nn.Name); err != nil {
+			if err := r.hooks.Destroy(ctx, nn, &corev1.Container{}); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
 				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
@@ -241,56 +232,14 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		}
 	}
 
-	log.Debug("Health status", "status", nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status)
-	if nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionFalse ||
-		nn.GetCondition(ndddvrv1.ConditionKindDeviceDriverHealthy).Status == corev1.ConditionUnknown {
-		if err := r.objects.Create(ctx, nn.Name, *nn.Spec.GrpcServerPort, c); err != nil {
-			log.Debug(errCreateObjects, "error", err)
-			r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCreateObjects)))
-			nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
-			return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
-		}
-		nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.Active(), ndddvrv1.NotDiscovered())
-		return reconcile.Result{}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
+	// when everything is validated we want to bring the deployment in healthy status by all means
+	if err := r.hooks.Deploy(ctx, nn, c); err != nil {
+		log.Debug(errCreateObjects, "error", err)
+		r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCreateObjects)))
+		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
-	return reconcile.Result{}, nil
-}
-
-// DeviceDriverMapFunc is a handler.ToRequestsFunc to be used to enqeue
-// request for reconciliation of NetworkNode when the device driver object changes
-func (r *Reconciler) DeviceDriverMapFunc(o client.Object) []ctrl.Request {
-	log := r.log.WithValues("deviceDriver Object", o)
-	result := []ctrl.Request{}
-
-	dd, ok := o.(*ndddvrv1.DeviceDriver)
-	if !ok {
-		panic(fmt.Sprintf("Expected a DeviceDriver but got a %T", o))
-	}
-	log.WithValues(dd.GetName(), dd.GetNamespace()).Info("DeviceDriver MapFunction")
-
-	selectors := []client.ListOption{
-		client.InNamespace(dd.Namespace),
-		client.MatchingLabels{},
-	}
-	nn := &ndddvrv1.NetworkNodeList{}
-	if err := r.client.List(context.TODO(), nn, selectors...); err != nil {
-		return result
-	}
-
-	for _, n := range nn.Items {
-		// only enqueue if the network node device driver kind matches with the device driver label
-		for k, v := range dd.GetLabels() {
-			if k == "ddriver-kind" {
-				if string(*n.Spec.DeviceDriverKind) == v {
-					name := client.ObjectKey{
-						Namespace: n.GetNamespace(),
-						Name:      n.GetName(),
-					}
-					log.WithValues(n.GetName(), n.GetNamespace()).Info("DeviceDriverMapFunc networknode ReQueue")
-					result = append(result, ctrl.Request{NamespacedName: name})
-				}
-			}
-		}
-	}
-	return result
+	r.record.Event(nn, event.Normal(reasonSync, "Successfully deployed network device driver"))
+	nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.Active(), ndddvrv1.NotDiscovered())
+	return reconcile.Result{}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 }

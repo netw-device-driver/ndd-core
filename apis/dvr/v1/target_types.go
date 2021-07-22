@@ -16,6 +16,10 @@ limitations under the License.
 
 package v1
 
+import (
+	nddv1 "github.com/netw-device-driver/ndd-runtime/apis/common/v1"
+)
+
 const (
 	ConfigmapJsonConfig      = "config.json"
 	LabelApplication         = "app"
@@ -98,6 +102,9 @@ type GrpcServerDetails struct {
 
 // DeviceDetails collects information about the deiscovered device
 type DeviceDetails struct {
+	// the Type of device the device driver is connected to
+	Type *nddv1.DeviceKind `json:"type,omitempty"`
+
 	// Host name of the device the device driver is connected to
 	HostName *string `json:"hostname,omitempty"`
 

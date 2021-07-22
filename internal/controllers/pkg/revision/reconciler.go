@@ -395,7 +395,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, pr), errUpdateStatus)
 	}
 
-	r.record.Event(pr, event.Normal(reasonSync, "Successfully configured package revision"))
+	r.record.Event(pr, event.Normal(reasonSync, "package revision successfully configured and healthy"))
 	pr.SetConditions(v1.Healthy())
 	return reconcile.Result{RequeueAfter: longWait}, errors.Wrap(r.client.Status().Update(ctx, pr), errUpdateStatus)
 }

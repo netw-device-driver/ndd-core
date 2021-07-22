@@ -41,6 +41,7 @@ type NetworkNodeSpec struct {
 // NetworkNodeStatus defines the observed state of NetworkNode
 type NetworkNodeStatus struct {
 	nddv1.ConditionedStatus `json:",inline"`
+	ControllerRef           nddv1.Reference `json:"controllerRef,omitempty"`
 	DeviceStatus            `json:",inline"`
 }
 
@@ -55,6 +56,7 @@ type NetworkNodeStatus struct {
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.kind=='DeviceDriverReady')].status"
 // +kubebuilder:printcolumn:name="ADDRESS",type="string",JSONPath=".spec.target.address",description="address to connect to the device'"
 // +kubebuilder:printcolumn:name="CONN-KIND",type="string",JSONPath=".spec.deviceDriverKind",description="Kind of communication type to the device"
+// +kubebuilder:printcolumn:name="TYPE",type="string",JSONPath=".status.deviceDetails.type",description="Type of device"
 // +kubebuilder:printcolumn:name="KIND",type="string",JSONPath=".status.deviceDetails.kind",description="Kind of device"
 // +kubebuilder:printcolumn:name="SWVERSION",type="string",JSONPath=".status.deviceDetails.swVersion",description="SW version of the device"
 // +kubebuilder:printcolumn:name="MACADDRESS",type="string",JSONPath=".status.deviceDetails.macAddress",description="macAddress of the device"

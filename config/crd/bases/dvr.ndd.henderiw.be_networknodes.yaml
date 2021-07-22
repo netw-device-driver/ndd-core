@@ -39,6 +39,10 @@ spec:
       jsonPath: .spec.deviceDriverKind
       name: CONN-KIND
       type: string
+    - description: Type of device
+      jsonPath: .status.deviceDetails.type
+      name: TYPE
+      type: string
     - description: Kind of device
       jsonPath: .status.deviceDetails.kind
       name: KIND
@@ -173,6 +177,15 @@ spec:
                   - status
                   type: object
                 type: array
+              controllerRef:
+                description: A Reference to a named object.
+                properties:
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - name
+                type: object
               deviceDetails:
                 description: The discovered DeviceDetails
                 properties:
@@ -194,6 +207,10 @@ spec:
                     type: string
                   swVersion:
                     description: SW version that is running on the device
+                    type: string
+                  type:
+                    description: the Type of device the device driver is connected
+                      to
                     type: string
                 type: object
               usedDeviceDriverSpec:
