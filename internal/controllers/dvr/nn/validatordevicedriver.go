@@ -82,7 +82,7 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 			//ImagePullPolicy: corev1.PullIfNotPresent,
 			Args: []string{
 				"start",
-				"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
+				"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
 				"--device-name=" + fmt.Sprintf("%s", name),
 				"--auto-pilot=true",
 				"--namespace=" + fmt.Sprintf("%s", namespace),
@@ -111,7 +111,7 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 		// update the argument/environment information, since this is specific for the container deployment
 		c.Args = []string{
 			"start",
-			"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
+			"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
 			"--device-name=" + fmt.Sprintf("%s", name),
 			"--auto-pilot=true",
 			"--namespace=" + fmt.Sprintf("%s", namespace),

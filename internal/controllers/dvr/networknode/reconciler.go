@@ -184,7 +184,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
@@ -215,13 +215,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
 		log.Debug(errCredentials, "error", err)
 		r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCredentials)))
-		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 
@@ -235,7 +235,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			if err := r.objects.Delete(ctx, nn.Name); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
@@ -247,10 +247,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 		if err := r.objects.Create(ctx, nn.Name, *nn.Spec.GrpcServerPort, c); err != nil {
 			log.Debug(errCreateObjects, "error", err)
 			r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCreateObjects)))
-			nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+			nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 			return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 		}
-		nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.Active(), ndddvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 	return reconcile.Result{}, nil

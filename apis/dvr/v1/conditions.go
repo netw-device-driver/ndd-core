@@ -28,11 +28,11 @@ import (
 
 // Condition Kinds.
 const (
-	// A DeviceDriverInstalled indicates whether the device driver has been installed.
-	ConditionKindDeviceDriverInstalled nddv1.ConditionKind = "DeviceDriverInstalled"
-
 	// A DeviceDriverHealthy indicates whether the device driver is healthy.
 	ConditionKindDeviceDriverHealthy nddv1.ConditionKind = "DeviceDriverHealthy"
+
+	// A DeviceDriverInstalled indicates whether the device driver has been configured.
+	ConditionKindDeviceDriverConfigured nddv1.ConditionKind = "DeviceDriverConfigured"
 
 	// A ConditionKindDeviceDriverReady indicates whether the device driver is discovered
 	// and connected to the network device.
@@ -41,8 +41,8 @@ const (
 
 // ConditionReasons a package is or is not installed.
 const (
-	ConditionReasonInactive         nddv1.ConditionReason = "InactiveDeviceDriver"
-	ConditionReasonActive           nddv1.ConditionReason = "ActiveDeviceDriver"
+	ConditionReasonConfigured       nddv1.ConditionReason = "ConfgiuredDeviceDriver"
+	ConditionReasonNotConfigured    nddv1.ConditionReason = "NotConfiguredDeviceDriver"
 	ConditionReasonUnhealthy        nddv1.ConditionReason = "UnhealthyDeviceDriver"
 	ConditionReasonHealthy          nddv1.ConditionReason = "HealthyDeviceDriver"
 	ConditionReasonUnknownHealth    nddv1.ConditionReason = "UnknownDeviceDriverHealth"
@@ -50,27 +50,6 @@ const (
 	ConditionReasonNotDiscovered    nddv1.ConditionReason = "UndiscoveredDeviceDriver"
 	ConditionReasonUnknownDiscovery nddv1.ConditionReason = "UnknownDeviceDriverDiscovery"
 )
-
-// Inactive indicates that the device driver is waiting to be
-// transitioned to an active state.
-func Inactive() nddv1.Condition {
-	return nddv1.Condition{
-		Kind:               ConditionKindDeviceDriverInstalled,
-		Status:             corev1.ConditionFalse,
-		LastTransitionTime: metav1.Now(),
-		Reason:             ConditionReasonInactive,
-	}
-}
-
-// Active indicates that the device driver is is installed and activated
-func Active() nddv1.Condition {
-	return nddv1.Condition{
-		Kind:               ConditionKindDeviceDriverInstalled,
-		Status:             corev1.ConditionTrue,
-		LastTransitionTime: metav1.Now(),
-		Reason:             ConditionReasonActive,
-	}
-}
 
 // Unhealthy indicates that the device driver is unhealthy.
 func Unhealthy() nddv1.Condition {
@@ -99,6 +78,27 @@ func UnknownHealth() nddv1.Condition {
 		Status:             corev1.ConditionUnknown,
 		LastTransitionTime: metav1.Now(),
 		Reason:             ConditionReasonUnknownHealth,
+	}
+}
+
+// NotConfigured indicates that the device driver is waiting to be
+// transitioned to a ready state.
+func NotConfigured() nddv1.Condition {
+	return nddv1.Condition{
+		Kind:               ConditionKindDeviceDriverConfigured,
+		Status:             corev1.ConditionFalse,
+		LastTransitionTime: metav1.Now(),
+		Reason:             ConditionReasonConfigured,
+	}
+}
+
+// Configured indicates that the device driver is is healthy and configured to
+func Configured() nddv1.Condition {
+	return nddv1.Condition{
+		Kind:               ConditionKindDeviceDriverConfigured,
+		Status:             corev1.ConditionTrue,
+		LastTransitionTime: metav1.Now(),
+		Reason:             ConditionReasonNotConfigured,
 	}
 }
 

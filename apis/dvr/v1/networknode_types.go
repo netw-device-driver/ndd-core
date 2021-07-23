@@ -51,8 +51,8 @@ type NetworkNodeStatus struct {
 
 // NetworkNode is the Schema for the networknodes API
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="INSTALLED",type="string",JSONPath=".status.conditions[?(@.kind=='DeviceDriverInstalled')].status"
 // +kubebuilder:printcolumn:name="HEALTHY",type="string",JSONPath=".status.conditions[?(@.kind=='DeviceDriverHealthy')].status"
+// +kubebuilder:printcolumn:name="CONFIGURED",type="string",JSONPath=".status.conditions[?(@.kind=='DeviceDriverConfigured')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.kind=='DeviceDriverReady')].status"
 // +kubebuilder:printcolumn:name="ADDRESS",type="string",JSONPath=".spec.target.address",description="address to connect to the device'"
 // +kubebuilder:printcolumn:name="CONN-KIND",type="string",JSONPath=".spec.deviceDriverKind",description="Kind of communication type to the device"

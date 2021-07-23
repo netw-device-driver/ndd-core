@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	dvrv1 "github.com/netw-device-driver/ndd-core/apis/dvr/v1"
+	"github.com/netw-device-driver/ndd-runtime/pkg/utils"
 	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -80,9 +81,13 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 			Image:           "henderiw/netwdevicedriver-gnmi:latest",
 			ImagePullPolicy: corev1.PullAlways,
 			//ImagePullPolicy: corev1.PullIfNotPresent,
+			SecurityContext: &corev1.SecurityContext{
+				RunAsUser:  utils.Int64Ptr(0),
+				Privileged: utils.BoolPtr(false),
+			},
 			Args: []string{
 				"start",
-				"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
+				"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
 				"--device-name=" + fmt.Sprintf("%s", name),
 				"--auto-pilot=true",
 				"--namespace=" + fmt.Sprintf("%s", namespace),
@@ -111,7 +116,7 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 		// update the argument/environment information, since this is specific for the container deployment
 		c.Args = []string{
 			"start",
-			"--cache-server-address=localhost:" + fmt.Sprintf("%d", port),
+			"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
 			"--device-name=" + fmt.Sprintf("%s", name),
 			"--auto-pilot=true",
 			"--namespace=" + fmt.Sprintf("%s", namespace),

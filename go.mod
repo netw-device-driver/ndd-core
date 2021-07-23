@@ -11,7 +11,7 @@ require (
 	github.com/google/go-cmp v0.5.5
 	github.com/google/go-containerregistry v0.4.1
 	github.com/google/go-containerregistry/pkg/authn/k8schain v0.0.0-20210330174036-3259211c1f24
-	github.com/netw-device-driver/ndd-runtime v0.3.38
+	github.com/netw-device-driver/ndd-runtime v0.3.47
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/afero v1.4.1

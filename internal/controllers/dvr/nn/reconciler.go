@@ -206,13 +206,13 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			if err := r.hooks.Destroy(ctx, nn, &corev1.Container{}); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
 		log.Debug(errCredentials, "error", err)
 		r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCredentials)))
-		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 
@@ -226,7 +226,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 			if err := r.hooks.Destroy(ctx, nn, &corev1.Container{}); err != nil {
 				log.Debug(errDeleteObjects, "error", err)
 				r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errDeleteObjects)))
-				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+				nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 				return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 			}
 		}
@@ -236,10 +236,10 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	if err := r.hooks.Deploy(ctx, nn, c); err != nil {
 		log.Debug(errCreateObjects, "error", err)
 		r.record.Event(nn, event.Warning(reasonSync, errors.Wrap(err, errCreateObjects)))
-		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.Inactive(), ndddvrv1.NotDiscovered())
+		nn.SetConditions(ndddvrv1.Unhealthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 		return reconcile.Result{RequeueAfter: shortWait}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 	}
 	r.record.Event(nn, event.Normal(reasonSync, "Successfully deployed network device driver"))
-	nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.Active(), ndddvrv1.NotDiscovered())
+	nn.SetConditions(ndddvrv1.Healthy(), ndddvrv1.NotConfigured(), ndddvrv1.NotDiscovered())
 	return reconcile.Result{}, errors.Wrap(r.client.Status().Update(ctx, nn), errUpdateStatus)
 }
