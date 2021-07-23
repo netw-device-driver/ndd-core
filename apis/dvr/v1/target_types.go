@@ -29,7 +29,7 @@ const (
 	PrefixDeployment         = "ndd-dep"
 	PrefixService            = "ndd-svc"
 	Namespace                = "ndd-system"
-	NamespaceLocalK8sDNS     = Namespace + "." + ".svc.cluster.local:"
+	NamespaceLocalK8sDNS     = Namespace + "." + "svc.cluster.local:"
 )
 
 // DeviceDriverKind represents the kinds of device drivers are supported

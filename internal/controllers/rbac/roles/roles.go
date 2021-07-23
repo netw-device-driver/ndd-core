@@ -60,6 +60,11 @@ var rulesSystemExtra = []rbacv1.PolicyRule{
 		Verbs:     verbsEdit,
 	},
 	{
+		APIGroups: []string{"", "apiextensions.k8s.io"},
+		Resources: []string{"*"},
+		Verbs:     verbsEdit,
+	},
+	{
 		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
 		Resources: []string{pluralNetworkNodes},
 		Verbs:     verbsView,
