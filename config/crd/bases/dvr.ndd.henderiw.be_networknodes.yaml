@@ -22,11 +22,11 @@ spec:
   scope: Cluster
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .status.conditions[?(@.kind=='DeviceDriverInstalled')].status
-      name: INSTALLED
-      type: string
     - jsonPath: .status.conditions[?(@.kind=='DeviceDriverHealthy')].status
       name: HEALTHY
+      type: string
+    - jsonPath: .status.conditions[?(@.kind=='DeviceDriverConfigured')].status
+      name: CONFIGURED
       type: string
     - jsonPath: .status.conditions[?(@.kind=='DeviceDriverReady')].status
       name: READY
@@ -119,12 +119,14 @@ spec:
                     - JSON_IETF
                     type: string
                   insecure:
+                    default: false
                     description: Insecure runs the communication in an insecure manner
                     type: boolean
                   proxy:
                     description: Proxy used to communicate to the target network node
                     type: string
                   skpVerify:
+                    default: false
                     description: SkipVerify disables verification of server certificates
                       when using HTTPS to connect to the Target. This is required
                       when the server certificate is self-signed, but is insecure
@@ -1398,6 +1400,7 @@ spec:
                         - JSON_IETF
                         type: string
                       insecure:
+                        default: false
                         description: Insecure runs the communication in an insecure
                           manner
                         type: boolean
@@ -1406,6 +1409,7 @@ spec:
                           node
                         type: string
                       skpVerify:
+                        default: false
                         description: SkipVerify disables verification of server certificates
                           when using HTTPS to connect to the Target. This is required
                           when the server certificate is self-signed, but is insecure

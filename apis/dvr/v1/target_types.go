@@ -69,10 +69,12 @@ type TargetDetails struct {
 	// HTTPS to connect to the Target. This is required when the server
 	// certificate is self-signed, but is insecure because it allows a
 	// man-in-the-middle to intercept the connection.
+	// +kubebuilder:default:=false
 	// +kubebuilder:validation:Optional
 	SkipVerify *bool `json:"skpVerify,omitempty"`
 
 	// Insecure runs the communication in an insecure manner
+	// +kubebuilder:default:=false
 	// +kubebuilder:validation:Optional
 	Insecure *bool `json:"insecure,omitempty"`
 

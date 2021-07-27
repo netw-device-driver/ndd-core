@@ -12,8 +12,7 @@ type BuildChild struct {
 }
 
 type PushChild struct {
-	tag string
-	fs  afero.Fs
+	fs afero.Fs
 }
 
 // pushProviderCmd pushes a Provider.

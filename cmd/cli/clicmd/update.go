@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	nddv1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
-	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/types"
@@ -61,7 +60,7 @@ var updateCmd = &cobra.Command{
 		//res, err := kube.Providers().Patch(context.Background(), providerName, types.MergePatchType, req, metav1.PatchOptions{})
 		//if err != nil {
 		//}
-		_, err = fmt.Fprintf(os.Stdout, "%s/%s updated\n", strings.ToLower(v1.ProviderGroupKind), providerName)
+		_, err = fmt.Fprintf(os.Stdout, "%s/%s updated\n", strings.ToLower(nddv1.ProviderGroupKind), providerName)
 		return err
 
 	},

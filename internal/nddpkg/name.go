@@ -21,6 +21,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/go-containerregistry/pkg/name"
+
 	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 )
@@ -41,6 +43,10 @@ const (
 
 	// NddpkgMatchPattern is the match pattern for identifying compiled ndd packages.
 	NddpkgMatchPattern string = "*" + NddpkgExtension
+
+	// identifierDelimeters is the set of valid OCI image identifier delimeter
+	// characters.
+	identifierDelimeters string = ":@"
 )
 
 func truncate(str string, num int) string {
@@ -94,6 +100,17 @@ func ParseNameFromMeta(fs afero.Fs, path string) (string, error) {
 		return "", err
 	}
 	return pkgName, nil
+}
+
+// ParsePackageSourceFromReference parses a package source from an OCI image
+// reference. A source is defined as an OCI image reference with the identifier
+// (tag or digest) stripped and no other changes to the original reference
+// source. This is necessary because go-containerregistry will convert docker.io
+// to index.docker.io for backwards compatibility before pulling an image. We do
+// not want to do that in cases where we are not pulling an image because it
+// breaks comparison with dependencies defined in a Configuration manifest.
+func ParsePackageSourceFromReference(ref name.Reference) string {
+	return strings.TrimRight(strings.TrimSuffix(ref.String(), ref.Identifier()), identifierDelimeters)
 }
 
 type metaPkg struct {

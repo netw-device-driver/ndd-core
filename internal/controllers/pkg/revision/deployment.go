@@ -66,6 +66,15 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 			},
 		},
 	}
+	envPodName := corev1.EnvVar{
+		Name: "POD_NAME",
+		ValueFrom: &corev1.EnvVarSource{
+			FieldRef: &corev1.ObjectFieldSelector{
+				APIVersion: "v1",
+				FieldPath:  "metadata.name",
+			},
+		},
+	}
 	d := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            revision.GetName(),
@@ -110,6 +119,7 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 							Env: []corev1.EnvVar{
 								envNameSpace,
 								envPodIP,
+								envPodName,
 							},
 							Command: []string{
 								"/manager",

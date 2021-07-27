@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/go-containerregistry/pkg/name"
 	nddv1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
-	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
 	nddpkg "github.com/netw-device-driver/ndd-core/internal/nddpkg"
 	"github.com/netw-device-driver/ndd-core/internal/version"
 	"github.com/pkg/errors"
@@ -39,9 +38,9 @@ var installCmd = &cobra.Command{
 	Long:         "install a ndd package for usage with the network device driver in kubernetes",
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		rap := v1.AutomaticActivation
+		rap := nddv1.AutomaticActivation
 		if manualActivation {
-			rap = v1.ManualActivation
+			rap = nddv1.ManualActivation
 		}
 		pkgName := providerName
 		if pkgName == "" {
@@ -83,7 +82,7 @@ var installCmd = &cobra.Command{
 			return errors.Wrap(warnIfNotFound(err), "cannot create provider")
 		}
 
-		_, err = fmt.Fprintf(os.Stdout, "%s/%s created\n", strings.ToLower(v1.ProviderGroupKind), pkgName)
+		_, err = fmt.Fprintf(os.Stdout, "%s/%s created\n", strings.ToLower(nddv1.ProviderGroupKind), pkgName)
 		return err
 	},
 }

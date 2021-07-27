@@ -5,7 +5,6 @@ import (
 
 	nddv1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
 	nddpkg "github.com/netw-device-driver/ndd-core/internal/nddpkg"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -27,10 +26,6 @@ var rootCmd = &cobra.Command{
 	Use:   "kubectl",
 	Short: "A command line tool for interacting with ndd.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		if debug {
-			log.SetLevel(log.DebugLevel)
-		}
-
 	},
 }
 

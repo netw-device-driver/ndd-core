@@ -20,11 +20,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Masterminds/semver"
 	"github.com/google/go-containerregistry/pkg/name"
 	v1 "github.com/netw-device-driver/ndd-core/apis/pkg/v1"
 	"github.com/netw-device-driver/ndd-core/internal/dag"
 	"github.com/netw-device-driver/ndd-core/internal/nddpkg"
 	"github.com/pkg/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -36,7 +38,7 @@ const (
 	lockName = "lock"
 
 	errNotMeta                   = "meta type is not a valid package"
-	errGetLock                   = "cannot get lock"
+	errGetOrCreateLock           = "cannot get or create lock"
 	errIncompatibleDependencyFmt = "incompatible dependencies: %+v"
 	errMissingDependenciesFmt    = "missing dependencies: %+v"
 	errDependencyNotInGraph      = "dependency is not present in graph"
@@ -88,8 +90,18 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 
 	// Get the lock.
 	lock := &v1.Lock{}
-	if err := m.client.Get(ctx, types.NamespacedName{Name: lockName}, lock); err != nil {
-		return found, installed, invalid, errors.Wrap(err, errGetLock)
+	err = m.client.Get(ctx, types.NamespacedName{Name: lockName}, lock)
+	if kerrors.IsNotFound(err) {
+		// If lock does not exist and we are inactive then we can return early
+		// because our only operation would be to remove self.
+		if pr.GetDesiredState() == v1.PackageRevisionInactive {
+			return found, installed, invalid, nil
+		}
+		lock.Name = lockName
+		err = m.client.Create(ctx, lock, &client.CreateOptions{})
+	}
+	if err != nil {
+		return found, installed, invalid, errors.Wrap(err, errGetOrCreateLock)
 	}
 
 	prRef, err := name.ParseReference(pr.GetSource(), name.WithDefaultRegistry(""))
@@ -97,9 +109,10 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 		return found, installed, invalid, err
 	}
 
+	lockRef := nddpkg.ParsePackageSourceFromReference(prRef)
 	selfIndex := intPointer(-1)
 	d := m.newDag()
-	implied, err := d.Init(v1.ToNodes(lock.Packages...), dag.FindIndex(prRef.Context().String(), selfIndex))
+	implied, err := d.Init(v1.ToNodes(lock.Packages...), dag.FindIndex(lockRef, selfIndex))
 	if err != nil {
 		return found, installed, invalid, err
 	}
@@ -118,7 +131,7 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 	self := v1.LockPackage{
 		Name:         pr.GetName(),
 		Type:         m.packageType,
-		Source:       prRef.Context().String(),
+		Source:       lockRef,
 		Version:      prRef.Identifier(),
 		Dependencies: sources,
 	}
@@ -172,21 +185,22 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 	for _, dep := range self.Dependencies {
 		// *WORKAROUND TO BE REMOVED
 		fmt.Printf("Dependency: %v \n", dep)
-		//_, err := d.GetNode(*dep.Package)
-		//if err != nil {
-		//	return found, installed, invalid, errors.New(errDependencyNotInGraph)
-		//}
-		// TBD
-		/*
-			n, err := d.GetNode(*dep.Provider)
+		_, err := d.GetNode(dep.Package)
+		if err != nil {
+			return found, installed, invalid, errors.New(errDependencyNotInGraph)
+		}
+		// All of our dependencies and transitive dependencies must exist. Check
+		// that neighbors have valid versions.
+		var invalidDeps []string
+		for _, dep := range self.Dependencies {
+			n, err := d.GetNode(dep.Package)
 			if err != nil {
 				return found, installed, invalid, errors.New(errDependencyNotInGraph)
 			}
-				lp, ok := n.(*v1.LockPackage)
-				if !ok {
-					return found, installed, invalid, errors.New(errDependencyNotLockPackage)
-				}
-
+			lp, ok := n.(*v1.LockPackage)
+			if !ok {
+				return found, installed, invalid, errors.New(errDependencyNotLockPackage)
+			}
 			c, err := semver.NewConstraint(dep.Constraints)
 			if err != nil {
 				return found, installed, invalid, err
@@ -198,7 +212,7 @@ func (m *PackageDependencyManager) Resolve(ctx context.Context, pkg runtime.Obje
 			if !c.Check(v) {
 				invalidDeps = append(invalidDeps, lp.Identifier())
 			}
-		*/
+		}
 	}
 	invalid = len(invalidDeps)
 	if invalid > 0 {

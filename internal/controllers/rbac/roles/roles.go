@@ -40,6 +40,7 @@ const (
 	pluralSecrets      = "secrets"
 	pluralLeases       = "leases"
 	pluralNetworkNodes = "networknodes"
+	pluralDeployments  = "deployments"
 )
 
 var (
@@ -67,6 +68,11 @@ var rulesSystemExtra = []rbacv1.PolicyRule{
 	{
 		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
 		Resources: []string{pluralNetworkNodes},
+		Verbs:     verbsView,
+	},
+	{
+		APIGroups: []string{"", "apps"},
+		Resources: []string{pluralDeployments},
 		Verbs:     verbsView,
 	},
 }
