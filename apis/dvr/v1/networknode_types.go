@@ -81,6 +81,31 @@ type NetworkNodeList struct {
 	Items           []NetworkNode `json:"items"`
 }
 
+// +kubebuilder:object:root=true
+
+// A NetworkNodeUsage indicates that a resource is using a NetworkNode.
+// +kubebuilder:printcolumn:name="AGE",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="CONFIG-NAME",type="string",JSONPath=".NetworkNodeRef.name"
+// +kubebuilder:printcolumn:name="RESOURCE-KIND",type="string",JSONPath=".resourceRef.kind"
+// +kubebuilder:printcolumn:name="RESOURCE-NAME",type="string",JSONPath=".resourceRef.name"
+// +kubebuilder:resource:scope=Cluster,categories={ndd,target,srl}
+type NetworkNodeUsage struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	nddv1.NetworkNodeUsage `json:",inline"`
+}
+
+// +kubebuilder:object:root=true
+
+// NetworkNodeUsageList contains a list of NetworkNodeUsage
+type NetworkNodeUsageList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	Items           []NetworkNodeUsage `json:"items"`
+}
+
 func init() {
 	SchemeBuilder.Register(&NetworkNode{}, &NetworkNodeList{})
+	SchemeBuilder.Register(&NetworkNodeUsage{}, &NetworkNodeUsageList{})
 }

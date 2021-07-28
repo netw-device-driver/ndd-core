@@ -50,3 +50,16 @@ var (
 	NetworkNodeKindAPIVersion   = NetworkNodeKind + "." + GroupVersion.String()
 	NetworkNodeGroupVersionKind = GroupVersion.WithKind(NetworkNodeKind)
 )
+
+// NetworkNodeUsage type metadata.
+var (
+	NetworkNodeUsageKind             = reflect.TypeOf(NetworkNodeUsage{}).Name()
+	NetworkNodeUsageGroupKind        = schema.GroupKind{Group: Group, Kind: NetworkNodeUsageKind}.String()
+	NetworkNodeUsageKindAPIVersion   = NetworkNodeUsageKind + "." + GroupVersion.String()
+	NetworkNodeUsageGroupVersionKind = GroupVersion.WithKind(NetworkNodeUsageKind)
+
+	NetworkNodeUsageListKind             = reflect.TypeOf(NetworkNodeUsageList{}).Name()
+	NetworkNodeUsageListGroupKind        = schema.GroupKind{Group: Group, Kind: NetworkNodeUsageListKind}.String()
+	NetworkNodeUsageListKindAPIVersion   = NetworkNodeUsageListKind + "." + GroupVersion.String()
+	NetworkNodeUsageListGroupVersionKind = GroupVersion.WithKind(NetworkNodeUsageListKind)
+)
