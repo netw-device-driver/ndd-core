@@ -148,7 +148,7 @@ controller-gen: ## Download controller-gen locally if necessary.
 
 NDD_GEN = $(shell pwd)/bin/ndd-gen
 ndd-gen: ## Download ndd-gen locally if necessary.
-	$(call go-get-tool,$(NDD_GEN),github.com/netw-device-driver/ndd-tools/cmd/ndd-gen@v0.1.11)
+	$(call go-get-tool,$(NDD_GEN),github.com/netw-device-driver/ndd-tools/cmd/ndd-gen@v0.1.12)
 
 
 KUSTOMIZE = $(shell pwd)/bin/kustomize

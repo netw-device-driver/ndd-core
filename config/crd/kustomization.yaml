@@ -7,6 +7,7 @@ resources:
 - bases/pkg.ndd.henderiw.be_controllerconfigs.yaml
 - bases/pkg.ndd.henderiw.be_locks.yaml
 - bases/dvr.ndd.henderiw.be_networknodes.yaml
+- bases/dvr.ndd.henderiw.be_networknodeusages.yaml
 - bases/dvr.ndd.henderiw.be_devicedrivers.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 

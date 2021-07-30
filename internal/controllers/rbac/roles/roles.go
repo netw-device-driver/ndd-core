@@ -35,12 +35,13 @@ const (
 
 	suffixStatus = "/status"
 
-	pluralEvents       = "events"
-	pluralConfigmaps   = "configmaps"
-	pluralSecrets      = "secrets"
-	pluralLeases       = "leases"
-	pluralNetworkNodes = "networknodes"
-	pluralDeployments  = "deployments"
+	pluralEvents            = "events"
+	pluralConfigmaps        = "configmaps"
+	pluralSecrets           = "secrets"
+	pluralLeases            = "leases"
+	pluralNetworkNodes      = "networknodes"
+	pluralNetworkNodeUsages = "networknodeusages"
+	pluralDeployments       = "deployments"
 )
 
 var (
@@ -69,6 +70,11 @@ var rulesSystemExtra = []rbacv1.PolicyRule{
 		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
 		Resources: []string{pluralNetworkNodes},
 		Verbs:     verbsView,
+	},
+	{
+		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
+		Resources: []string{pluralNetworkNodeUsages},
+		Verbs:     verbsEdit,
 	},
 	{
 		APIGroups: []string{"", "apps"},

@@ -83,7 +83,7 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 			//ImagePullPolicy: corev1.PullIfNotPresent,
 			SecurityContext: &corev1.SecurityContext{
 				RunAsUser:  utils.Int64Ptr(0),
-				Privileged: utils.BoolPtr(false),
+				Privileged: utils.BoolPtr(true),
 			},
 			Args: []string{
 				"start",
