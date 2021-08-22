@@ -5,7 +5,7 @@ metadata:
   name: networknode-editor-role
 rules:
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - networknodes
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - networknodes/status
   verbs:

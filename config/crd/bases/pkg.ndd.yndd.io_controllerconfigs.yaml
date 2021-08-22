@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: controllerconfigs.pkg.ndd.henderiw.be
+  name: controllerconfigs.pkg.ndd.yndd.io
 spec:
-  group: pkg.ndd.henderiw.be
+  group: pkg.ndd.yndd.io
   names:
     kind: ControllerConfig
     listKind: ControllerConfigList

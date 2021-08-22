@@ -67,12 +67,12 @@ var rulesSystemExtra = []rbacv1.PolicyRule{
 		Verbs:     verbsEdit,
 	},
 	{
-		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
+		APIGroups: []string{"", "dvr.ndd.yndd.io"},
 		Resources: []string{pluralNetworkNodes},
 		Verbs:     verbsView,
 	},
 	{
-		APIGroups: []string{"", "dvr.ndd.henderiw.be"},
+		APIGroups: []string{"", "dvr.ndd.yndd.io"},
 		Resources: []string{pluralNetworkNodeUsages},
 		Verbs:     verbsEdit,
 	},

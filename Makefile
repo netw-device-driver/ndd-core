@@ -28,16 +28,16 @@ BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 # This variable is used to construct full image tags for bundle and catalog images.
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
-# ndd.henderiw.be/ndd-core-bundle:$VERSION and ndd.henderiw.be/ndd-core-catalog:$VERSION.
-IMAGE_TAG_BASE ?= ndd.henderiw.be/ndd-core
+# yndd.io/ndd-core-bundle:$VERSION and yndd.io/ndd-core-catalog:$VERSION.
+IMAGE_TAG_BASE ?= yndd.io/ndd-core
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG_CORE ?= henderiw/nddcore:latest
-IMG_RBAC ?= henderiw/nddrbac:latest
+IMG_CORE ?= yndd/nddcore:latest
+IMG_RBAC ?= yndd/nddrbac:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 

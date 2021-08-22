@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: devicedrivers.dvr.ndd.henderiw.be
+  name: devicedrivers.dvr.ndd.yndd.io
 spec:
-  group: dvr.ndd.henderiw.be
+  group: dvr.ndd.yndd.io
   names:
     kind: DeviceDriver
     listKind: DeviceDriverList

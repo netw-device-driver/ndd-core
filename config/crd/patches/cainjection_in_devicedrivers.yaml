@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: devicedrivers.dvr.ndd.henderiw.be
+  name: devicedrivers.dvr.ndd.yndd.io

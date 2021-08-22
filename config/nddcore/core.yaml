@@ -58,7 +58,7 @@ spec:
         volumeMounts:
         - mountPath: /cache
           name: package-cache
-        image: henderiw/nddcore:latest
+        image: yndd/nddcore:latest
         #imagePullPolicy: Always
         name: core
         securityContext:

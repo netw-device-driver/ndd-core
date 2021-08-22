@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package v1 contains API Schema definitions for the pkg v1 API group
 //+kubebuilder:object:generate=true
-//+groupName=meta.pkg.ndd.henderiw.be
+//+groupName=meta.pkg.ndd.yndd.io
 package v1
 
 import (
@@ -28,7 +28,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "meta.pkg.ndd.henderiw.be"
+	Group   = "meta.pkg.ndd.yndd.io"
 	Version = "v1"
 )
 

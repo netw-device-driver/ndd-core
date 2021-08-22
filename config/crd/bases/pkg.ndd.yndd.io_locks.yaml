@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: locks.pkg.ndd.henderiw.be
+  name: locks.pkg.ndd.yndd.io
 spec:
-  group: pkg.ndd.henderiw.be
+  group: pkg.ndd.yndd.io
   names:
     categories:
     - ndd

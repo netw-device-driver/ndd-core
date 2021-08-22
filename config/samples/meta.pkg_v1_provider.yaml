@@ -1,4 +1,4 @@
-apiVersion: meta.pkg.ndd.henderiw.be/v1
+apiVersion: meta.pkg.ndd.yndd.io/v1
 kind: Provider
 metadata:
   name: provider-sample

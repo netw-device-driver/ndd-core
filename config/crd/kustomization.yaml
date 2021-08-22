@@ -2,13 +2,13 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/pkg.ndd.henderiw.be_providers.yaml
-- bases/pkg.ndd.henderiw.be_providerrevisions.yaml
-- bases/pkg.ndd.henderiw.be_controllerconfigs.yaml
-- bases/pkg.ndd.henderiw.be_locks.yaml
-- bases/dvr.ndd.henderiw.be_networknodes.yaml
-- bases/dvr.ndd.henderiw.be_networknodeusages.yaml
-- bases/dvr.ndd.henderiw.be_devicedrivers.yaml
+- bases/pkg.ndd.yndd.io_providers.yaml
+- bases/pkg.ndd.yndd.io_providerrevisions.yaml
+- bases/pkg.ndd.yndd.io_controllerconfigs.yaml
+- bases/pkg.ndd.yndd.io_locks.yaml
+- bases/dvr.ndd.yndd.io_networknodes.yaml
+- bases/dvr.ndd.yndd.io_networknodeusages.yaml
+- bases/dvr.ndd.yndd.io_devicedrivers.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 #patchesStrategicMerge:

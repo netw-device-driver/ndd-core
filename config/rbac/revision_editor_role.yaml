@@ -5,7 +5,7 @@ metadata:
   name: revision-editor-role
 rules:
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - revisions
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - revisions/status
   verbs:

@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: providers.meta.pkg.ndd.henderiw.be
+  name: providers.meta.pkg.ndd.yndd.io
 spec:
-  group: meta.pkg.ndd.henderiw.be
+  group: meta.pkg.ndd.yndd.io
   names:
     kind: Provider
     listKind: ProviderList

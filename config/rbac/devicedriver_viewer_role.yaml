@@ -5,7 +5,7 @@ metadata:
   name: devicedriver-viewer-role
 rules:
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - devicedrivers
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - devicedrivers/status
   verbs:

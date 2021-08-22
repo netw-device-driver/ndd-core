@@ -109,7 +109,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - devicedrivers
   verbs:
@@ -117,7 +117,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - networknodes
   verbs:
@@ -129,13 +129,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - networknodes/finalizers
   verbs:
   - update
 - apiGroups:
-  - dvr.ndd.henderiw.be
+  - dvr.ndd.yndd.io
   resources:
   - networknodes/status
   verbs:
@@ -143,7 +143,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - locks
   verbs:
@@ -155,7 +155,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providerrevisions
   verbs:
@@ -167,13 +167,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providerrevisions/finalizers
   verbs:
   - update
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providerrevisions/status
   verbs:
@@ -181,7 +181,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providers
   verbs:
@@ -193,13 +193,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providers/finalizers
   verbs:
   - update
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - providers/status
   verbs:

@@ -5,7 +5,7 @@ metadata:
   name: package-editor-role
 rules:
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - packages
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - packages/status
   verbs:

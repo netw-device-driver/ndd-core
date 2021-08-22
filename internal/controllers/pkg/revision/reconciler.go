@@ -42,7 +42,7 @@ import (
 
 const (
 	// Finalizer
-	finalizer = "revision.pkg.henderiw.be"
+	finalizer = "revision.pkg.ndd.yndd.io"
 
 	// Timers
 	reconcileTimeout = 1 * time.Minute
@@ -256,7 +256,7 @@ func NewReconciler(mgr manager.Manager, opts ...ReconcilerOption) *Reconciler {
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=locks,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=locks,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile package revision.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo

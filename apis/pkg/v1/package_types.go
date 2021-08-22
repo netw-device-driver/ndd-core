@@ -25,6 +25,15 @@ type PackageSpec struct {
 	// Package is the name of the package that is being requested.
 	Package string `json:"package"`
 
+	// AutoPilot specifies how the provider operates
+	// When set to true the provider applies delta/diff changes to the device
+	// manged resources automatically, if set to false the provider will report
+	// the delta and the operator should intervene what to do with the delta/diffs
+	// Defaults to true. Can be disabled by explicitly setting to flase.
+	// +optional
+	// +kubebuilder:default=true
+	AutoPilot *bool `json:"autoPilot,omitempty"`
+
 	// RevisionActivationPolicy specifies how the package controller should
 	// update from one revision to the next. Options are Automatic or Manual.
 	// Default is Automatic.

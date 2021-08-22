@@ -49,7 +49,7 @@ const (
 )
 
 const (
-	finalizer = "lock.pkg.henderiw.be"
+	finalizer = "lock.pkg.ndd.yndd.io"
 
 	errGetLock              = "cannot get package lock"
 	errAddFinalizer         = "cannot add lock finalizer"

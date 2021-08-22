@@ -1,4 +1,4 @@
-apiVersion: pkg.ndd.henderiw.be/v1
+apiVersion: pkg.ndd.yndd.io/v1
 kind: Package
 metadata:
   name: package-sample

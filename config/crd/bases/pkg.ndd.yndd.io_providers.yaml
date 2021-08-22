@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: providers.pkg.ndd.henderiw.be
+  name: providers.pkg.ndd.yndd.io
 spec:
-  group: pkg.ndd.henderiw.be
+  group: pkg.ndd.yndd.io
   names:
     categories:
     - ndd
@@ -56,6 +56,15 @@ spec:
             description: ProviderSpec specifies details about a request to install
               a provider to the network device driver.
             properties:
+              autoPilot:
+                default: true
+                description: AutoPilot specifies how the provider operates When set
+                  to true the provider applies delta/diff changes to the device manged
+                  resources automatically, if set to false the provider will report
+                  the delta and the operator should intervene what to do with the
+                  delta/diffs Defaults to true. Can be disabled by explicitly setting
+                  to flase.
+                type: boolean
               controllerConfigRef:
                 description: ControllerConfigRef references a ControllerConfig resource
                   that will be used to configure the packaged controller Deployment.

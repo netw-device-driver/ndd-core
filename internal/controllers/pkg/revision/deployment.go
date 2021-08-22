@@ -75,6 +75,21 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 			},
 		},
 	}
+	args := make([]string, 0)
+	if revision.GetAutoPilot() {
+		args = []string{
+			"start",
+			"--debug",
+			"--autopilot=true",
+		}
+	} else {
+		args = []string{
+			"start",
+			"--debug",
+			"--autopilot=false",
+		}
+	}
+
 	d := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:            revision.GetName(),
@@ -84,13 +99,13 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 		Spec: appsv1.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{"pkg.henderiw.be/revision": revision.GetName()},
+				MatchLabels: map[string]string{"pkg.ndd.yndd.io/revision": revision.GetName()},
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      provider.GetName(),
 					Namespace: namespace,
-					Labels:    map[string]string{"pkg.henderiw.be/revision": revision.GetName()},
+					Labels:    map[string]string{"pkg.ndd.yndd.io/revision": revision.GetName()},
 				},
 				Spec: corev1.PodSpec{
 					SecurityContext: &corev1.PodSecurityContext{
@@ -112,10 +127,7 @@ func buildProviderDeployment(provider *pkgmetav1.Provider, revision v1.PackageRe
 								Privileged:               &privileged,
 								RunAsNonRoot:             &runAsNonRoot,
 							},
-							Args: []string{
-								"start",
-								"--debug",
-							},
+							Args: args,
 							Env: []corev1.EnvVar{
 								envNameSpace,
 								envPodIP,

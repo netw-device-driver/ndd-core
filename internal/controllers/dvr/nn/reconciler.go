@@ -37,7 +37,7 @@ import (
 
 const (
 	// Finalizer
-	finalizer = "networknode.dvr.ndd.henderiw.be"
+	finalizer = "networknode.dvr.ndd.yndd.io"
 
 	// default
 	defaultGrpcPort = 9999
@@ -161,7 +161,18 @@ func NewReconciler(mgr manager.Manager, opts ...ReconcilerOption) *Reconciler {
 	return r
 }
 
-// Reconcile package revision.
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups="",resources=services,verbs=get;list;watch;create;update;delete
+// +kubebuilder:rbac:groups="",resources=pods,verbs=list;watch;get;patch;create;update;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=list;watch;get
+// +kubebuilder:rbac:groups="",resources=events,verbs=list;watch;get;patch;create;update;delete
+// +kubebuilder:rbac:groups=dvr.ndd.yndd.io,resources=devicedrivers,verbs=get;list;watch
+// +kubebuilder:rbac:groups=dvr.ndd.yndd.io,resources=networknodes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=dvr.ndd.yndd.io,resources=networknodes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=dvr.ndd.yndd.io,resources=networknodes/finalizers,verbs=update
+
+// Reconcile network node.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo
 	log := r.log.WithValues("request", req)
 	log.Debug("Network Node", "NameSpace", req.NamespacedName)

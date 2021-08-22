@@ -69,7 +69,7 @@ var startCmd = &cobra.Command{
 			Port:                   9443,
 			HealthProbeBindAddress: probeAddr,
 			LeaderElection:         enableLeaderElection,
-			LeaderElectionID:       "c66ce353.rbac.ndd.henderiw.be",
+			LeaderElectionID:       "c66ce353.rbac.ndd.yndd.io",
 			SyncPeriod:             &syncPeriod,
 		})
 		if err != nil {

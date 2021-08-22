@@ -21,6 +21,7 @@ import (
 	"github.com/netw-device-driver/ndd-core/internal/dag"
 	nddv1 "github.com/netw-device-driver/ndd-runtime/apis/common/v1"
 	"github.com/netw-device-driver/ndd-runtime/pkg/resource"
+	"github.com/netw-device-driver/ndd-runtime/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -53,6 +54,9 @@ var _ Package = &Provider{}
 type Package interface {
 	resource.Object
 	resource.Conditioned
+
+	GetAutoPilot() bool
+	SetAutoPilot(b bool)
 
 	GetSource() string
 	SetSource(s string)
@@ -90,6 +94,16 @@ func (p *Provider) GetCondition(ct nddv1.ConditionKind) nddv1.Condition {
 // SetConditions of this Provider.
 func (p *Provider) SetConditions(c ...nddv1.Condition) {
 	p.Status.SetConditions(c...)
+}
+
+// GetAutoPilot of this Provider.
+func (p *Provider) GetAutoPilot() bool {
+	return *p.Spec.AutoPilot
+}
+
+// SetAutoPilot of this Provider.
+func (p *Provider) SetAutoPilot(b bool) {
+	p.Spec.AutoPilot = utils.BoolPtr(b)
 }
 
 // GetSource of this Provider.
@@ -214,6 +228,9 @@ type PackageRevision interface {
 	GetRevision() int64
 	SetRevision(r int64)
 
+	GetAutoPilot() bool
+	SetAutoPilot(b bool)
+
 	GetSkipDependencyResolution() *bool
 	SetSkipDependencyResolution(*bool)
 
@@ -299,6 +316,16 @@ func (p *ProviderRevision) GetRevision() int64 {
 // SetRevision of this ProviderRevision.
 func (p *ProviderRevision) SetRevision(r int64) {
 	p.Spec.Revision = r
+}
+
+// GetAutoPilot of this ProviderRevision.
+func (p *ProviderRevision) GetAutoPilot() bool {
+	return *p.Spec.AutoPilot
+}
+
+// SetAutoPilot of this ProviderRevision.
+func (p *ProviderRevision) SetAutoPilot(b bool) {
+	p.Spec.AutoPilot = utils.BoolPtr(b)
 }
 
 // GetDependencyStatus of this ProviderRevision.

@@ -77,15 +77,14 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 		// apply the default settings
 		c = &corev1.Container{
 			Name:            "nddriver-" + name,
-			Image:           "henderiw/netwdevicedriver-gnmi:latest",
+			Image:           "yndd/ndd-gnmi:latest",
 			ImagePullPolicy: corev1.PullAlways,
 			//ImagePullPolicy: corev1.PullIfNotPresent,
 			Args: []string{
 				"start",
 				"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
-				"--device-name=" + fmt.Sprintf("%s", name),
-				"--auto-pilot=true",
-				"--namespace=" + fmt.Sprintf("%s", namespace),
+				"--device-name=" + name,
+				"--namespace=" + namespace,
 				"--debug",
 			},
 			Env: []corev1.EnvVar{
@@ -112,9 +111,8 @@ func (v *NnValidator) ValidateDeviceDriver(ctx context.Context, namespace, name,
 		c.Args = []string{
 			"start",
 			"--grpc-server-address=" + ":" + fmt.Sprintf("%d", port),
-			"--device-name=" + fmt.Sprintf("%s", name),
-			"--auto-pilot=true",
-			"--namespace=" + fmt.Sprintf("%s", namespace),
+			"--device-name=" + name,
+			"--namespace=" + namespace,
 			"--debug",
 		}
 		c.Env = []corev1.EnvVar{

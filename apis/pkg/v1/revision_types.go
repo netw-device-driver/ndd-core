@@ -65,6 +65,15 @@ type PackageRevisionSpec struct {
 	// based on the parent's RevisionHistoryLimit.
 	Revision int64 `json:"revision"`
 
+	// AutoPilot specifies how the provider operates
+	// When set to true the provider applies delta/diff changes to the device
+	// manged resources automatically, if set to false the provider will report
+	// the delta and the operator should intervene what to do with the delta/diffs
+	// Defaults to true. Can be disabled by explicitly setting to flase.
+	// +optional
+	// +kubebuilder:default=true
+	AutoPilot *bool `json:"autoPilot,omitempty"`
+
 	// SkipDependencyResolution indicates to the package manager whether to skip
 	// resolving dependencies for a package. Setting this value to true may have
 	// unintended consequences.

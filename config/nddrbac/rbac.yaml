@@ -50,7 +50,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        image: henderiw/nddrbac:latest
+        image: yndd/nddrbac:latest
         #imagePullPolicy: Always
         name: rbac
         securityContext:

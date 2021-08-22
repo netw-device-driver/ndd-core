@@ -1,4 +1,4 @@
-apiVersion: dvr.ndd.henderiw.be/v1
+apiVersion: dvr.ndd.yndd.io/v1
 kind: DeviceDriver
 metadata:
   name: devicedriver-sample

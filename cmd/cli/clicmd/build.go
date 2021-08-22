@@ -1,7 +1,11 @@
 package clicmd
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/google/go-containerregistry/pkg/v1/tarball"
@@ -32,6 +36,29 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		// preprocess crd files
+		// the further processing cannot handle --- in crd files
+		var files []string
+		if err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+			files = append(files, path)
+			return nil
+		}); err != nil {
+			return err
+		}
+		for _, file := range files {
+			input, err := ioutil.ReadFile(file)
+			if err != nil {
+				errors.Wrap(err, fmt.Sprintf("error reading file %s", file))
+			}
+
+			output := bytes.Replace(input, []byte("---"), []byte(""), -1)
+
+			if err = ioutil.WriteFile(file, output, 0644); err != nil {
+				errors.Wrap(err, fmt.Sprintf("error writing file %s", file))
+			}
+		}
+
+		// process updates files
 		metaScheme, err := nddpkg.BuildMetaScheme()
 		if err != nil {
 			return errors.New("cannot build meta scheme for package parser")

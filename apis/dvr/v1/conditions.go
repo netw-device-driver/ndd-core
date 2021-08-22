@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package v1 contains API Schema definitions for the pkg v1 API group
 //+kubebuilder:object:generate=true
-//+groupName=dvr.ndd.henderiw.be
+//+groupName=dvr.ndd.yndd.io
 package v1
 
 import (

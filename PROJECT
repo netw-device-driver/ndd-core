@@ -1,4 +1,4 @@
-domain: ndd.henderiw.be
+domain: ndd.yndd.io
 layout:
 - go.kubebuilder.io/v3
 multigroup: true
@@ -12,7 +12,7 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: pkg
   kind: Provider
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
@@ -20,7 +20,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: pkg
   kind: Package
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
@@ -28,7 +28,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: pkg
   kind: Revision
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
@@ -36,7 +36,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: meta.pkg
   kind: Provider
   path: github.com/netw-device-driver/ndd-core/apis/meta.pkg/v1
@@ -44,7 +44,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: pkg
   kind: ControllerConfig
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
@@ -52,7 +52,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: pkg
   kind: Lock
   path: github.com/netw-device-driver/ndd-core/apis/pkg/v1
@@ -60,7 +60,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: dvr
   kind: NetworkNode
   path: github.com/netw-device-driver/ndd-core/apis/dvr/v1
@@ -68,7 +68,7 @@ resources:
 - api:
     crdVersion: v1
     namespaced: true
-  domain: ndd.henderiw.be
+  domain: ndd.yndd.io
   group: dvr
   kind: DeviceDriver
   path: github.com/netw-device-driver/ndd-core/apis/dvr/v1

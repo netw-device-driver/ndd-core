@@ -39,7 +39,7 @@ import (
 )
 
 const (
-	parentLabel      = "pkg.ndd.henderiw.be/pakage"
+	parentLabel      = "pkg.ndd.yndd.io/pakage"
 	reconcileTimeout = 1 * time.Minute
 
 	shortWait     = 30 * time.Second
@@ -186,12 +186,12 @@ func NewReconciler(mgr ctrl.Manager, opts ...ReconcilerOption) *Reconciler {
 // +kubebuilder:rbac:groups="",resources=events,verbs=get;list;watch;create;update;patch
 // +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch
 // +kubebuilder:rbac:groups="apiextensions.k8s.io",resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providerrevisions/finalizers,verbs=update
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=pkg.ndd.henderiw.be,resources=providers/finalizers,verbs=update
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providerrevisions,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providerrevisions/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providerrevisions/finalizers,verbs=update
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=pkg.ndd.yndd.io,resources=providers/finalizers,verbs=update
 
 // Reconcile package.
 func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) { // nolint:gocyclo
@@ -320,6 +320,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	// Create the non-existent package revision.
 	pr.SetName(revisionName)
 	pr.SetLabels(map[string]string{parentLabel: p.GetName()})
+	pr.SetAutoPilot(p.GetAutoPilot())
 	pr.SetSource(p.GetSource())
 	pr.SetPackagePullPolicy(p.GetPackagePullPolicy())
 	pr.SetPackagePullSecrets(p.GetPackagePullSecrets())

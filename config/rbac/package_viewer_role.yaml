@@ -5,7 +5,7 @@ metadata:
   name: package-viewer-role
 rules:
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - packages
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - pkg.ndd.henderiw.be
+  - pkg.ndd.yndd.io
   resources:
   - packages/status
   verbs:

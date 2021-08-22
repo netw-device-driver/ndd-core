@@ -64,7 +64,7 @@ var startCmd = &cobra.Command{
 			Port:                   9443,
 			HealthProbeBindAddress: probeAddr,
 			LeaderElection:         enableLeaderElection,
-			LeaderElectionID:       "c66ce353.ndd.henderiw.be",
+			LeaderElectionID:       "c66ce353.ndd.yndd.io",
 		})
 		if err != nil {
 			return errors.Wrap(err, "Cannot create manager")
